@@ -1,0 +1,11 @@
+{
+  "name": "emojot-pricing-calculator",
+  "version": "1.0.0",
+  "description": "Emojot pricing calculator — component-based, config-driven",
+  "scripts": {
+    "start": "npx serve . --listen 3000",
+    "dev": "npx serve . --listen 3000"
+  },
+  "type": "module",
+  "private": true
+}

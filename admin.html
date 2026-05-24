@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emojot Pricing Config Admin</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="admin-page">
+
+<header class="app-header admin-header">
+  <h1>Pricing Config Admin</h1>
+  <a class="header-link" href="index.html">Open Calculator</a>
+</header>
+
+<main class="admin-shell">
+  <section class="card admin-toolbar-card">
+    <div class="card-body admin-toolbar">
+      <div class="admin-toolbar-left">
+        <button id="save-config-btn" class="admin-btn primary">Save Config</button>
+        <button id="reset-config-btn" class="admin-btn">Reset Defaults</button>
+        <button id="export-config-btn" class="admin-btn">Export JSON</button>
+        <button id="import-config-btn" class="admin-btn">Import JSON</button>
+        <input type="file" id="import-config-file" accept="application/json" hidden>
+      </div>
+      <div id="admin-status" class="admin-status"></div>
+    </div>
+  </section>
+
+  <div id="config-sections"></div>
+</main>
+
+<script type="module" src="js/admin/config-admin.js"></script>
+</body>
+</html>
