@@ -9,11 +9,25 @@
 <body class="admin-page">
 
 <header class="app-header admin-header">
-  <h1>Pricing Config Admin</h1>
+  <div class="header-text">
+    <h1>Pricing config admin</h1>
+    <p class="header-subtitle">Edit prices and limits safely, then save once when you are done.</p>
+  </div>
   <a class="header-link" href="index.html">Open Calculator</a>
 </header>
 
 <main class="admin-shell">
+  <section class="card admin-intro-card">
+    <div class="card-body admin-intro">
+      <div class="admin-intro-title">How to use this page</div>
+      <div class="admin-intro-grid">
+        <div class="admin-intro-step"><span>1</span><p>Use search to find a price or tier quickly.</p></div>
+        <div class="admin-intro-step"><span>2</span><p>Edit values. Changed fields are highlighted.</p></div>
+        <div class="admin-intro-step"><span>3</span><p>Click Save Config and refresh the calculator page.</p></div>
+      </div>
+    </div>
+  </section>
+
   <section class="card admin-toolbar-card">
     <div class="card-body admin-toolbar">
       <div class="admin-toolbar-left">
@@ -21,9 +35,14 @@
         <button id="reset-config-btn" class="admin-btn">Reset Defaults</button>
         <button id="export-config-btn" class="admin-btn">Export JSON</button>
         <button id="import-config-btn" class="admin-btn">Import JSON</button>
+        <button id="expand-all-btn" class="admin-btn">Expand All</button>
+        <button id="collapse-all-btn" class="admin-btn">Collapse All</button>
         <input type="file" id="import-config-file" accept="application/json" hidden>
       </div>
-      <div id="admin-status" class="admin-status"></div>
+      <div class="admin-toolbar-right">
+        <input id="admin-search" class="admin-search-input" type="search" placeholder="Search section, field, or value...">
+        <div id="admin-status" class="admin-status"></div>
+      </div>
     </div>
   </section>
 

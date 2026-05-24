@@ -4,7 +4,7 @@ import { TIERS, PRICES } from '../config/pricing.js';
 import { fmt } from '../core/utils.js';
 import {
   renderTierSelector, renderNumberField, renderRow2,
-  renderToggleRow, renderSection, renderAddonsSection, renderIncludedPanel,
+  renderToggleRow, renderSection, renderAddonsSection,
   bindNum, bindToggle, bindTier,
 } from '../components/ui.js';
 
@@ -37,17 +37,6 @@ export const sltModule = {
     return `
       ${renderSection('Tier')}
       ${renderTierSelector(ID, T, s.tier)}
-      ${renderIncludedPanel({
-        tierLabel: tier.label,
-        items: [
-          { label: 'Keywords',         value: `${tier.keywords}` },
-          { label: 'Mentions',         value: `${tier.mentions.toLocaleString()}` },
-          { label: 'SM Profiles',      value: `${tier.profiles}` },
-          { label: 'Users',            value: `${tier.users}` },
-          { label: 'Mention Flagging', value: tier.flagging === 'included' ? 'Included' : 'Paid add-on' },
-        ],
-        note: 'Additional usage blocks and users are charged only when limits are exceeded.',
-      })}
 
       ${renderSection('Usage')}
       ${renderRow2(

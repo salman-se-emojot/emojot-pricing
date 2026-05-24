@@ -55,14 +55,15 @@ function renderModuleSelector() {
   const grid = document.getElementById('module-selector-grid');
   grid.innerHTML = MODULE_REGISTRY.map(mod => `
     <div class="module-toggle" id="mtoggle-${mod.id}" data-module="${mod.id}">
-      <div class="module-check" id="mcheck-${mod.id}"></div>
-      <div>
+      <div class="module-check" id="mcheck-${mod.id}" aria-hidden="true"></div>
+      <div class="module-info">
         <div class="module-toggle-top">
           <span class="mod-badge" id="mbadge-${mod.id}">${mod.shortName}</span>
           <span class="mod-name">${mod.name}</span>
         </div>
         <div class="mod-desc">${mod.description}</div>
       </div>
+      <div class="module-toggle-state" id="mstate-${mod.id}">Add module</div>
     </div>
   `).join('');
 
@@ -89,8 +90,10 @@ function setModuleToggleUI(id, active) {
   document.getElementById(`mtoggle-${id}`)?.classList.toggle('active', active);
   const check = document.getElementById(`mcheck-${id}`);
   const badge = document.getElementById(`mbadge-${id}`);
+  const state = document.getElementById(`mstate-${id}`);
   if (check) check.innerHTML = active ? '✓' : '';
   if (badge) badge.classList.toggle('active', active);
+  if (state) state.textContent = active ? 'Added' : 'Add module';
 }
 
 function updateUXIBadge() {

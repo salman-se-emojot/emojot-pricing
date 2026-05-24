@@ -13,7 +13,7 @@ import { TIERS, PRICES, ORM_ADMIN_CONNECT_SLABS, ORM_NON_ADMIN_CONNECT_SLABS } f
 import { fmt, findSlabRate } from '../core/utils.js';
 import {
   renderTierSelector, renderNumberField, renderRow2,
-  renderToggleRow, renderSection, renderAddonsSection, renderIncludedPanel,
+  renderToggleRow, renderSection, renderAddonsSection,
   renderRadioGroup,
   bindNum, bindToggle, bindTier, bindRadio,
 } from '../components/ui.js';
@@ -74,16 +74,6 @@ export const ormModule = {
       ${showAdmin ? `
         ${renderSection('Admin Connect — Google & Facebook')}
         ${renderTierSelector('orm-admin', T_ADMIN, s.adminTier)}
-        ${renderIncludedPanel({
-          tierLabel: adminTier.label,
-          items: [
-            { label: 'Locations',           value: `${adminTier.locations}` },
-            { label: 'Users',               value: `${adminTier.users}` },
-            { label: 'Competitor Analysis', value: adminTier.competitor === 'included' ? 'Included' : adminTier.competitor === 'addon' ? 'Paid add-on' : 'Not available' },
-            { label: 'Ticket Management',   value: adminTier.ticket === 'included' ? 'Included' : 'Paid add-on' },
-          ],
-          note: `${adminTier.locations} Google & Facebook locations included. Excess billed at Admin Connect slab rate.`,
-        })}
         ${renderNumberField({
           id: 'orm-admin-loc', label: 'Total Admin Connect Locations',
           value: s.adminLocations,
@@ -94,16 +84,6 @@ export const ormModule = {
       ${showNonAdmin ? `
         ${renderSection('Non-Admin Connect — All Platforms')}
         ${renderTierSelector('orm-non', T_NON, s.nonAdminTier)}
-        ${renderIncludedPanel({
-          tierLabel: nonTier.label,
-          items: [
-            { label: 'Locations',           value: `${nonTier.locations}` },
-            { label: 'Users',               value: `${nonTier.users}` },
-            { label: 'Competitor Analysis', value: nonTier.competitor === 'included' ? 'Included' : nonTier.competitor === 'addon' ? 'Paid add-on' : 'Not available' },
-            { label: 'Ticket Management',   value: nonTier.ticket === 'included' ? 'Included' : 'Paid add-on' },
-          ],
-          note: `${nonTier.locations} location${nonTier.locations > 1 ? 's' : ''} included across all review platforms (Google, Facebook, TripAdvisor & more). Excess billed at Non-Admin Connect slab rate.`,
-        })}
         ${renderNumberField({
           id: 'orm-non-loc', label: 'Total Non-Admin Connect Locations',
           value: s.nonAdminLocations,

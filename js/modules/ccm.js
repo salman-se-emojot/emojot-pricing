@@ -4,7 +4,7 @@ import { TIERS, PRICES, TOUCHPOINT_SLABS, ENTERPRISE_TOUCHPOINT_SLABS } from '..
 import { fmt, findSlabRate } from '../core/utils.js';
 import {
   renderTierSelector, renderNumberField, renderRow2,
-  renderToggleRow, renderSection, renderAddonsSection, renderIncludedPanel,
+  renderToggleRow, renderSection, renderAddonsSection,
   bindNum, bindToggle, bindTier,
 } from '../components/ui.js';
 
@@ -41,19 +41,6 @@ export const ccmModule = {
     return `
       ${renderSection('Tier')}
       ${renderTierSelector(ID, T, s.tier)}
-      ${renderIncludedPanel({
-        tierLabel: tier.label,
-        items: [
-          { label: 'Touchpoints',           value: `${tier.touchpoints} nodes` },
-          { label: 'Sensors',               value: `${tier.sensors}` },
-          { label: 'Workflows',             value: `${tier.workflows}` },
-          { label: 'Dashboards',            value: `${tier.dashboards}` },
-          { label: 'Users',                 value: `${tier.users}` },
-          { label: 'Brand Personalization', value: tier.brand    === 'included' ? 'Included' : 'Add-on' },
-          { label: 'Emosight AI',           value: tier.emosight === 'included' ? 'Included' : 'Add-on' },
-        ],
-        note: 'Anything above these limits is charged at the add-on rate.',
-      })}
 
       ${renderSection('Touchpoints, Sensors & Workflows')}
       ${renderNumberField({

@@ -1,35 +1,86 @@
 // Shared UI rendering primitives.
 // All functions return HTML strings. After insertion, call bindEvents.
 
-// ── Tier selector ────────────────────────────────────────────
-export function renderTierSelector(moduleId, tiers, currentTierId) {
-  return `<div class="tier-selector">
-    ${Object.values(tiers).map(t => `
-      <button class="tier-btn ${t.id === currentTierId ? 'active' : ''}"
-              data-module="${moduleId}" data-tier="${t.id}">
-        <span class="tier-name">${t.label}</span>
-        <span class="tier-price">$${t.base.toLocaleString()}/mo</span>
-      </button>`).join('')}
-  </div>`;
+const TIER_FEATURE_LABELS = {
+  touchpoints: 'Touchpoints',
+  sensors: 'Sensors',
+  dashboards: 'Dashboards',
+  workflows: 'Workflows',
+  locations: 'Locations',
+  keywords: 'Keywords',
+  mentions: 'Mentions',
+  profiles: 'Profiles',
+  users: 'Users',
+  brand: 'Brand Personalization',
+  emosight: 'Emosight AI',
+  flagging: 'Mention Flagging',
+  competitor: 'Competitor Analysis',
+  ticket: 'Ticket Management',
+};
+
+const TIER_FEATURE_PRIORITY = [
+  'touchpoints',
+  'locations',
+  'keywords',
+  'mentions',
+  'profiles',
+  'sensors',
+  'workflows',
+  'dashboards',
+  'users',
+  'brand',
+  'emosight',
+  'flagging',
+  'competitor',
+  'ticket',
+];
+
+function normalizeTierFeatureValue(key, value) {
+  if (value === 'included') return 'Included';
+  if (value === 'addon') return 'Add-on';
+  if (value === 'unavailable') return 'Not available';
+  if (typeof value === 'number') {
+    if (key === 'mentions') return value.toLocaleString();
+    return String(value);
+  }
+  return String(value);
 }
 
-// ── Included-in-tier visual panel ───────────────────────────
-// items: [{ label: string, value: string }]
-export function renderIncludedPanel({ tierLabel, items = [], note = '' }) {
-  return `<div class="included-panel">
-    <div class="included-panel-head">
-      <div class="included-panel-title">Included In ${tierLabel}</div>
-      <span class="included-tier-pill">${tierLabel} Tier</span>
-    </div>
-    <div class="included-grid">
-      ${items.map(item => `
-        <div class="included-item">
-          <div class="included-label">${item.label}</div>
-          <div class="included-value">${item.value}</div>
+function tierHighlights(tier) {
+  const keys = TIER_FEATURE_PRIORITY.filter(key => key in tier);
+  return keys.slice(0, 7).map(key => {
+    const label = TIER_FEATURE_LABELS[key] ?? key;
+    const value = normalizeTierFeatureValue(key, tier[key]);
+    return `${label}: ${value}`;
+  });
+}
+
+// ── Tier selector ────────────────────────────────────────────
+export function renderTierSelector(moduleId, tiers, currentTierId) {
+  const tierValues = Object.values(tiers);
+  const hasStandardTier = tierValues.some(tier => tier.id === 'standard');
+
+  return `<div class="tier-selector">
+    ${tierValues.map(tier => {
+      const active = tier.id === currentTierId;
+      const highlightList = tierHighlights(tier);
+      const isRecommended = hasStandardTier ? tier.id === 'standard' : false;
+
+      return `
+      <button class="tier-btn ${active ? 'active' : ''} ${isRecommended ? 'recommended' : ''}"
+              data-module="${moduleId}" data-tier="${tier.id}">
+        <div class="tier-head">
+          <span class="tier-name">${tier.label}</span>
+          ${isRecommended ? '<span class="tier-chip">Most popular</span>' : ''}
         </div>
-      `).join('')}
-    </div>
-    ${note ? `<div class="included-note">${note}</div>` : ''}
+        <span class="tier-price">$${tier.base.toLocaleString()}<span class="tier-price-mo">/mo</span></span>
+        <span class="tier-billing-note">Base package</span>
+        <ul class="tier-feature-list">
+          ${highlightList.map(item => `<li>${item}</li>`).join('')}
+        </ul>
+        <span class="tier-cta">${active ? 'Selected' : 'Choose plan'}</span>
+      </button>`;
+    }).join('')}
   </div>`;
 }
 
