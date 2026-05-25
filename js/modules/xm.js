@@ -36,8 +36,8 @@ export const xmModule = {
     const brandIncluded  = tier.brand    === 'included';
 
     const tpHint = s.tier === 'enterprise'
-      ? `Includes ${tier.touchpoints} nodes. Excess charged at volume rate (excess-only).`
-      : `Includes ${tier.touchpoints} nodes. All nodes × band rate when above included amount.`;
+      ? `Includes ${tier.touchpoints} touchpoints. Excess charged at volume rate (excess-only).`
+      : `Includes ${tier.touchpoints} touchpoints. All touchpoints × band rate when above included amount.`;
 
     return `
       ${renderSection('Tier')}
@@ -45,7 +45,7 @@ export const xmModule = {
 
       ${renderSection('Touchpoints & Sensors')}
       ${renderNumberField({
-        id: 'xm-tp', label: 'Total Touchpoints (hierarchy nodes)',
+        id: 'xm-tp', label: 'Total Touchpoints',
         value: s.touchpoints, hint: tpHint,
       })}
 
@@ -123,7 +123,7 @@ export const xmModule = {
       }
     } else if (tp > tier.touchpoints) {
       const rate = findSlabRate(TOUCHPOINT_SLABS, tp);
-      lines.push({ label: `Touchpoints (${tp} nodes × ${fmt(rate)})`, amount: tp * rate });
+      lines.push({ label: `Touchpoints (${tp} touchpoints × ${fmt(rate)})`, amount: tp * rate });
     }
 
     const sensorExcess = Math.max(0, s.sensors - tier.sensors);
