@@ -1,7 +1,7 @@
 // SLT — Social Listening & Tracking module
 
 import { TIERS, PRICES } from '../config/pricing.js';
-import { fmt } from '../core/utils.js';
+import { fmt, round2, centSum } from '../core/utils.js';
 import {
   renderTierSelector, renderNumberField, renderRow2,
   renderToggleRow, renderSection, renderAddonsSection,
@@ -100,17 +100,17 @@ export const sltModule = {
 
     const keywordExcess = Math.max(0, s.keywords - tier.keywords);
     if (keywordExcess > 0)
-      lines.push({ label: `Keywords (${keywordExcess} excess × ${fmt(PRICES.sltKeyword)})`, amount: keywordExcess * PRICES.sltKeyword });
+      lines.push({ label: `Keywords (${keywordExcess} excess × ${fmt(PRICES.sltKeyword)})`, amount: round2(keywordExcess * PRICES.sltKeyword) });
 
     const mentionExcess = Math.max(0, s.mentions - tier.mentions);
     const mentionBlocks = Math.ceil(mentionExcess / MENTION_BLOCK);
     if (mentionBlocks > 0)
-      lines.push({ label: `Mentions (${mentionExcess.toLocaleString()} excess → ${mentionBlocks} blocks × ${fmt(PRICES.sltMentionBlock)})`, amount: mentionBlocks * PRICES.sltMentionBlock });
+      lines.push({ label: `Mentions (${mentionExcess.toLocaleString()} excess → ${mentionBlocks} blocks × ${fmt(PRICES.sltMentionBlock)})`, amount: round2(mentionBlocks * PRICES.sltMentionBlock) });
 
     const profileExcess = Math.max(0, s.profiles - tier.profiles);
     const profileBlocks = Math.ceil(profileExcess / PROFILE_BLOCK);
     if (profileBlocks > 0)
-      lines.push({ label: `SM profiles (${profileExcess} excess → ${profileBlocks} blocks × ${fmt(PRICES.sltProfileBlock)})`, amount: profileBlocks * PRICES.sltProfileBlock });
+      lines.push({ label: `SM profiles (${profileExcess} excess → ${profileBlocks} blocks × ${fmt(PRICES.sltProfileBlock)})`, amount: round2(profileBlocks * PRICES.sltProfileBlock) });
 
     if (s.flaggingOn && tier.flagging !== 'included')
       lines.push({ label: 'Mention flagging / ticket management', amount: PRICES.sltFlagging });
@@ -118,9 +118,9 @@ export const sltModule = {
       lines.push({ label: 'YouTube AI search', amount: PRICES.sltYoutube });
     const userExcess = Math.max(0, s.users - tier.users);
     if (userExcess > 0)
-      lines.push({ label: `Users (${userExcess} excess × ${fmt(PRICES.user)})`, amount: userExcess * PRICES.user });
+      lines.push({ label: `Users (${userExcess} excess × ${fmt(PRICES.user)})`, amount: round2(userExcess * PRICES.user) });
 
-    const subtotal = lines.reduce((sum, l) => sum + (l.amount ?? 0), 0);
+    const subtotal = centSum(lines.map(l => l.amount ?? 0));
     return { moduleId: ID, lines, subtotal, hasContactSales: false, contactSalesReason: null, hasEstimate: false };
   },
 };

@@ -3,6 +3,14 @@
 export const fmt = n =>
   '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
+// Round to 2 decimal places using integer-cent math.
+// Eliminates JS floating-point drift on financial amounts (e.g. 116.67 × 2).
+export const round2 = n => Math.round(n * 100) / 100;
+
+// Cent-safe sum: accumulate in integer cents then convert back.
+// Use this instead of a plain + reduction on money values.
+export const centSum = arr => Math.round(arr.reduce((s, v) => s + Math.round((v ?? 0) * 100), 0)) / 100;
+
 // Find the slab rate for a total value.
 // Returns null if total exceeds all defined slabs (→ contact sales).
 export function findSlabRate(slabs, total) {

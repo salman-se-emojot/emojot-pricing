@@ -3,7 +3,7 @@
 // To change a price: update js/config/pricing.js only.
 
 import { TIERS, PRICES, TOUCHPOINT_SLABS, ENTERPRISE_TOUCHPOINT_SLABS } from '../config/pricing.js';
-import { fmt, findSlabRate } from '../core/utils.js';
+import { fmt, findSlabRate, round2, centSum } from '../core/utils.js';
 import {
   renderTierSelector, renderNumberField, renderRow2,
   renderToggleRow, renderSection, renderAddonsSection,
@@ -37,7 +37,7 @@ export const xmModule = {
 
     const tpHint = s.tier === 'enterprise'
       ? `Includes ${tier.touchpoints} touchpoints. Excess charged at volume rate (excess-only).`
-      : `Includes ${tier.touchpoints} touchpoints. All touchpoints × band rate when above included amount.`;
+      : `Includes ${tier.touchpoints} touchpoints. Excess above included charged at slab rate.`;
 
     return `
       ${renderSection('Tier')}
@@ -119,31 +119,32 @@ export const xmModule = {
       if (tp > tier.touchpoints) {
         const rate = findSlabRate(ENTERPRISE_TOUCHPOINT_SLABS, tp);
         const excess = tp - tier.touchpoints;
-        lines.push({ label: `Touchpoints (${excess} excess × ${fmt(rate)})`, amount: excess * rate });
+        lines.push({ label: `Touchpoints (${excess} excess × ${fmt(rate)})`, amount: round2(excess * rate) });
       }
     } else if (tp > tier.touchpoints) {
       const rate = findSlabRate(TOUCHPOINT_SLABS, tp);
-      lines.push({ label: `Touchpoints (${tp} touchpoints × ${fmt(rate)})`, amount: tp * rate });
+      const excess = tp - tier.touchpoints;
+      lines.push({ label: `Touchpoints (${excess} excess × ${fmt(rate)})`, amount: round2(excess * rate) });
     }
 
     const sensorExcess = Math.max(0, s.sensors - tier.sensors);
     if (sensorExcess > 0)
-      lines.push({ label: `Sensors (${sensorExcess} excess × ${fmt(PRICES.sensor)})`, amount: sensorExcess * PRICES.sensor });
+      lines.push({ label: `Sensors (${sensorExcess} excess × ${fmt(PRICES.sensor)})`, amount: round2(sensorExcess * PRICES.sensor) });
     const dashboardExcess = Math.max(0, s.dashboards - tier.dashboards);
     if (dashboardExcess > 0)
-      lines.push({ label: `Dashboards (${dashboardExcess} excess × ${fmt(PRICES.dashboard)})`, amount: dashboardExcess * PRICES.dashboard });
+      lines.push({ label: `Dashboards (${dashboardExcess} excess × ${fmt(PRICES.dashboard)})`, amount: round2(dashboardExcess * PRICES.dashboard) });
 
     if (s.brandOn && tier.brand !== 'included')
-      lines.push({ label: `Brand personalization (${s.brandCount} × ${fmt(PRICES.brand)})`, amount: s.brandCount * PRICES.brand });
+      lines.push({ label: `Brand personalization (${s.brandCount} × ${fmt(PRICES.brand)})`, amount: round2(s.brandCount * PRICES.brand) });
     if (s.emosightOn && tier.emosight !== 'included')
       lines.push({ label: 'Emosight AI', amount: PRICES.emosight });
     if (s.domainOn)
       lines.push({ label: 'SMS Domain Whitelisting', amount: PRICES.domainWhitelist });
     const userExcess = Math.max(0, s.users - tier.users);
     if (userExcess > 0)
-      lines.push({ label: `Users (${userExcess} excess × ${fmt(PRICES.user)})`, amount: userExcess * PRICES.user });
+      lines.push({ label: `Users (${userExcess} excess × ${fmt(PRICES.user)})`, amount: round2(userExcess * PRICES.user) });
 
-    const subtotal = lines.filter(l => l.amount != null).reduce((sum, l) => sum + l.amount, 0);
+    const subtotal = centSum(lines.filter(l => l.amount != null).map(l => l.amount));
     return { moduleId: ID, lines, subtotal, hasContactSales, contactSalesReason, hasEstimate: false };
   },
 };

@@ -50,12 +50,12 @@ test('switching tier marks new tier button active', async ({ page }) => {
 });
 
 // ── Touchpoints ──────────────────────────────────────────────────────
-test('increasing touchpoints beyond included raises total', async ({ page }) => {
+test('increasing touchpoints beyond included raises total (excess-only)', async ({ page }) => {
   const baseCost = await getTotalAmount(page);  // $50
-  await setNumber(page, 'xm-tp', 30);           // 30 nodes × $10 = $300
+  await setNumber(page, 'xm-tp', 30);           // 25 excess × $10 = $250
   const newTotal = await getTotalAmount(page);
   expect(newTotal).toBeGreaterThan(baseCost);
-  expect(newTotal).toBeCloseTo(350, 0);         // $50 + $300
+  expect(newTotal).toBeCloseTo(300, 0);         // $50 + $250
 });
 
 test('touchpoints within included count do not change total', async ({ page }) => {
@@ -135,7 +135,7 @@ test('summary shows module subtotal line', async ({ page }) => {
 });
 
 // ── Compound scenario ────────────────────────────────────────────────
-test('Standard tier + sensors + domain = $380', async ({ page }) => {
+test('Standard tier + excess sensors + domain = $330', async ({ page }) => {
   await setTier(page, 'xm', 'standard');
   await setNumber(page, 'xm-sensors', 4);       // 1 excess (standard includes 3) × $50 = $50
   await toggleSwitch(page, 'xm-domain');        // +$30

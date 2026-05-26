@@ -36,10 +36,10 @@ test('switching to CCM Enterprise gives $1000 base', async ({ page }) => {
 });
 
 // ── Touchpoints ──────────────────────────────────────────────────────
-test('excess touchpoints charge all-nodes × rate (Basic: 30 × $10 = $300)', async ({ page }) => {
-  await setNumber(page, 'ccm-tp', 30);
+test('excess touchpoints charge excess-only × rate (Basic: 25 excess × $10 = $250)', async ({ page }) => {
+  await setNumber(page, 'ccm-tp', 30);          // 25 excess × $10 = $250
   const total = await getTotalAmount(page);
-  expect(total).toBeCloseTo(380, 0);            // $80 + $300
+  expect(total).toBeCloseTo(330, 0);            // $80 + $250
 });
 
 test('Enterprise excess touchpoints: excess-only pricing', async ({ page }) => {

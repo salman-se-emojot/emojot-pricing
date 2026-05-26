@@ -10,7 +10,7 @@
 // When 'both' is active, admin tier drives the add-on rules.
 
 import { TIERS, PRICES, ORM_ADMIN_CONNECT_SLABS, ORM_NON_ADMIN_CONNECT_SLABS } from '../config/pricing.js';
-import { fmt, findSlabRate } from '../core/utils.js';
+import { fmt, findSlabRate, round2, centSum } from '../core/utils.js';
 import {
   renderTierSelector, renderNumberField, renderRow2,
   renderToggleRow, renderSection, renderAddonsSection,
@@ -208,7 +208,7 @@ export const ormModule = {
           hasContactSales    = true;
           contactSalesReason = `Admin Connect location count (${s.adminLocations}) exceeds pricing table — contact sales`;
         } else {
-          lines.push({ label: `Admin Connect — excess locations (${adminExcess} × ${fmt(rate)})`, amount: adminExcess * rate });
+          lines.push({ label: `Admin Connect — excess locations (${adminExcess} × ${fmt(rate)})`, amount: round2(adminExcess * rate) });
         }
       }
     }
@@ -225,7 +225,7 @@ export const ormModule = {
           hasContactSales    = true;
           contactSalesReason = `Non-Admin Connect location count (${s.nonAdminLocations}) exceeds pricing table — contact sales`;
         } else {
-          lines.push({ label: `Non-Admin Connect — excess locations (${nonAdminExcess} × ${fmt(rate)})`, amount: nonAdminExcess * rate });
+          lines.push({ label: `Non-Admin Connect — excess locations (${nonAdminExcess} × ${fmt(rate)})`, amount: round2(nonAdminExcess * rate) });
         }
       }
     }
@@ -236,7 +236,7 @@ export const ormModule = {
     if (s.competitorOn && compStatus === 'addon' && s.competitorLocationChannels > 0)
       lines.push({
         label:  `Competitor analysis (${s.competitorLocationChannels} location-channels × ${fmt(PRICES.ormCompetitorPerLocationChannel)})`,
-        amount: s.competitorLocationChannels * PRICES.ormCompetitorPerLocationChannel,
+        amount: round2(s.competitorLocationChannels * PRICES.ormCompetitorPerLocationChannel),
       });
 
     if (s.ticketOn && ticketStatus === 'addon')
@@ -244,11 +244,11 @@ export const ormModule = {
 
     const userExcess = Math.max(0, s.users - includedUsers);
     if (userExcess > 0)
-      lines.push({ label: `Users (${userExcess} excess × ${fmt(PRICES.user)})`, amount: userExcess * PRICES.user });
+      lines.push({ label: `Users (${userExcess} excess × ${fmt(PRICES.user)})`, amount: round2(userExcess * PRICES.user) });
 
     const subtotal = hasContactSales
       ? 0
-      : lines.filter(l => l.amount != null).reduce((sum, l) => sum + l.amount, 0);
+      : centSum(lines.filter(l => l.amount != null).map(l => l.amount));
 
     return { moduleId: ID, lines, subtotal, hasContactSales, contactSalesReason, hasEstimate: false };
   },

@@ -1,7 +1,7 @@
 // Summary panel renderer.
 // Receives the structured output from engine.calculate() and produces HTML.
 
-import { fmt } from '../core/utils.js';
+import { fmt, round2 } from '../core/utils.js';
 import { OPEN_ITEMS } from '../config/openItems.js';
 import { TIERS } from '../config/pricing.js';
 
@@ -146,7 +146,7 @@ export function renderSummary(calcOutput, appState) {
     </div>
     <div class="sum-line">
       <span class="sum-label">Billing surcharge (+${billing.surchargePct}%)</span>
-      <span class="sum-amount">+${fmt(baseTotal * (billing.multiplier - 1))}/mo</span>
+      <span class="sum-amount">+${fmt(round2(baseTotal * (billing.multiplier - 1)))}/mo</span>
     </div>`;
     html += `<hr class="sum-divider">`;
   }
@@ -167,13 +167,13 @@ export function renderSummary(calcOutput, appState) {
     html += `<div class="sum-total-block">
       <div class="sum-total-note">${isUXI ? '<span class="uxi-badge">UXI</span> ' : ''}${cycleNote}</div>
       <div class="sum-total-amount">${fmt(billedTotal)}<span class="sum-total-mo">/mo</span></div>
-      <div class="sum-total-annual">Annual total: ${fmt(billedTotal * 12)}</div>
+      <div class="sum-total-annual">Annual total: ${fmt(round2(billedTotal * 12))}</div>
     </div>`;
 
     if (billing.surchargePct > 0) {
-      html += `<div class="sum-base-note">Base annual rate: ${fmt(baseTotal)}/mo · ${fmt(baseTotal * 12)}/yr</div>`;
+      html += `<div class="sum-base-note">Base annual rate: ${fmt(baseTotal)}/mo · ${fmt(round2(baseTotal * 12))}/yr</div>`;
     } else {
-      html += `<div class="sum-base-note">${fmt(baseTotal * 12)}/yr · no surcharge on annual billing</div>`;
+      html += `<div class="sum-base-note">${fmt(round2(baseTotal * 12))}/yr · no surcharge on annual billing</div>`;
     }
   }
 

@@ -27,26 +27,26 @@ describe('XM — Basic tier baseline', () => {
   });
 });
 
-// ── Touchpoints — Basic/Standard (all-nodes × rate) ─────────────────
+// ── Touchpoints — Basic/Standard (excess-only × rate) ───────────────
 describe('XM — Touchpoint slab pricing (Basic/Standard)', () => {
-  it('Basic: 30 nodes (>5 included) → all 30 × $10.00 = $300', () => {
+  it('Basic: 30 nodes (5 included) → 25 excess × $10.00 = $250', () => {
     const r = calc({ tier: 'basic', touchpoints: 30 });
     const tpLine = r.lines.find(l => l.label.includes('Touchpoints'));
-    expect(tpLine.amount).toBe(300);     // 30 × 10
-    expect(r.subtotal).toBe(350);        // $50 base + $300
+    expect(tpLine.amount).toBe(250);     // 25 excess × $10
+    expect(r.subtotal).toBe(300);        // $50 base + $250
   });
 
-  it('Basic: 56 nodes → falls into $5.00 band → 56 × $5.00 = $280', () => {
+  it('Basic: 56 nodes (5 included) → 51 excess × $5.00 = $255', () => {
     const r = calc({ tier: 'basic', touchpoints: 56 });
     const tpLine = r.lines.find(l => l.label.includes('Touchpoints'));
-    expect(tpLine.amount).toBe(280);     // 56 × 5
+    expect(tpLine.amount).toBe(255);     // 51 excess × $5 (rate band ≤105)
   });
 
-  it('Standard ($250 base): 50 nodes → 50 × $10.00 = $500', () => {
+  it('Standard ($250 base): 50 nodes (25 included) → 25 excess × $10.00 = $250', () => {
     const r = calc({ tier: 'standard', touchpoints: 50 });
     const tpLine = r.lines.find(l => l.label.includes('Touchpoints'));
-    expect(tpLine.amount).toBe(500);     // 50 × 10
-    expect(r.subtotal).toBe(750);        // $250 + $500
+    expect(tpLine.amount).toBe(250);     // 25 excess × $10
+    expect(r.subtotal).toBe(500);        // $250 + $250
   });
 
   it('Standard: at included count (25) → no touchpoint charge', () => {
@@ -58,6 +58,14 @@ describe('XM — Touchpoint slab pricing (Basic/Standard)', () => {
   it('Basic: exactly 5 nodes → no touchpoint charge', () => {
     const r = calc({ tier: 'basic', touchpoints: 5 });
     expect(r.lines.some(l => l.label.includes('Touchpoints'))).toBe(false);
+  });
+
+  it('Basic: 1 excess node → 1 × $10.00 = $10 (no cliff)', () => {
+    // Critical: adding a single node above included should cost $10, not 6×$10=$60
+    const r = calc({ tier: 'basic', touchpoints: 6 });
+    const tpLine = r.lines.find(l => l.label.includes('Touchpoints'));
+    expect(tpLine.amount).toBe(10);      // only 1 excess × $10
+    expect(r.subtotal).toBe(60);         // $50 + $10
   });
 });
 
@@ -192,5 +200,15 @@ describe('XM — Compound calculation', () => {
     // $250 + $100 + $30 + $10 = $390
     expect(r.subtotal).toBe(390);
     expect(r.hasContactSales).toBe(false);
+  });
+
+  it('Standard tier + 10 excess touchpoints → only 10 billed, not 35', () => {
+    const r = calc({
+      tier: 'standard',
+      touchpoints: 35,   // 10 excess × $10 = $100
+    });
+    const tpLine = r.lines.find(l => l.label.includes('Touchpoints'));
+    expect(tpLine.amount).toBe(100);     // 10 excess × $10, not 35 × $10
+    expect(r.subtotal).toBe(350);        // $250 + $100
   });
 });

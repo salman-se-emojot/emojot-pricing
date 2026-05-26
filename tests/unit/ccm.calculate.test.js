@@ -29,17 +29,31 @@ describe('CCM — Basic tier baseline', () => {
 
 // ── Touchpoints ──────────────────────────────────────────────────────
 describe('CCM — Touchpoint pricing', () => {
-  it('Basic: 30 nodes → all 30 × $10.00 = $300', () => {
+  it('Basic: 30 nodes (5 included) → 25 excess × $10.00 = $250', () => {
     const r = calc({ tier: 'basic', touchpoints: 30 });
     const tp = r.lines.find(l => l.label.includes('Touchpoint'));
-    expect(tp.amount).toBe(300);
-    expect(r.subtotal).toBe(380);        // $80 + $300
+    expect(tp.amount).toBe(250);         // 25 excess × $10
+    expect(r.subtotal).toBe(330);        // $80 + $250
+  });
+
+  it('Basic: 1 excess node → only 1 × $10 = $10 (no cliff)', () => {
+    const r = calc({ tier: 'basic', touchpoints: 6 });
+    const tp = r.lines.find(l => l.label.includes('Touchpoint'));
+    expect(tp.amount).toBe(10);          // 1 excess × $10
+    expect(r.subtotal).toBe(90);         // $80 + $10
   });
 
   it('Standard: at included (25) → no touchpoint charge', () => {
     const r = calc({ tier: 'standard', touchpoints: 25 });
     expect(r.lines.some(l => l.label.includes('Touchpoint'))).toBe(false);
     expect(r.subtotal).toBe(300);
+  });
+
+  it('Standard: 35 nodes (25 included) → 10 excess × $10 = $100', () => {
+    const r = calc({ tier: 'standard', touchpoints: 35 });
+    const tp = r.lines.find(l => l.label.includes('Touchpoint'));
+    expect(tp.amount).toBe(100);         // 10 excess × $10
+    expect(r.subtotal).toBe(400);        // $300 + $100
   });
 
   it('Enterprise: 200 nodes → 100 excess × $2.00 = $200', () => {
