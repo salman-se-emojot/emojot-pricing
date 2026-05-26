@@ -2,12 +2,13 @@
 //
 // Two independent channel types — customers can subscribe to either or both:
 //   Admin Connect     — Google + Facebook only (admin API access required)
-//                       Tiers: Basic $50 / Standard $250 / Premium $500
+//                       Tiers: Basic $50 / Standard $250 / Enterprise $500
 //   Non-Admin Connect — all review platforms (no admin access needed)
-//                       Tiers: Basic $150 / Standard $350 / Premium $1,250
+//                       Tiers: Basic $150 / Standard $350 / Enterprise $1,250
 //
 // Both channel types have their own tier rules for users, competitor, ticket.
 // When 'both' is active, admin tier drives the add-on rules.
+// Enterprise includes 3 competitor location-channels; excess charged at standard rate.
 
 import { TIERS, PRICES, ORM_ADMIN_CONNECT_SLABS, ORM_NON_ADMIN_CONNECT_SLABS } from '../config/pricing.js';
 import { fmt, findSlabRate, round2, centSum } from '../core/utils.js';
@@ -33,9 +34,10 @@ function addonRules(s) {
   const showAdmin = s.packageType === 'admin' || s.packageType === 'both';
   const tier = showAdmin ? T_ADMIN[s.adminTier] : T_NON[s.nonAdminTier];
   return {
-    compStatus:    tier.competitor,
-    ticketStatus:  tier.ticket,
-    includedUsers: tier.users,
+    compStatus:                tier.competitor,
+    ticketStatus:              tier.ticket,
+    includedUsers:             tier.users,
+    includedCompetitorChannels: tier.competitorChannelsIncluded ?? 0,
   };
 }
 
@@ -63,9 +65,10 @@ export const ormModule = {
     const adminTier    = T_ADMIN[s.adminTier];
     const nonTier      = T_NON[s.nonAdminTier];
 
-    const { compStatus, ticketStatus, includedUsers } = addonRules(s);
+    const { compStatus, ticketStatus, includedUsers, includedCompetitorChannels } = addonRules(s);
     const compUnavail  = compStatus === 'unavailable';
     const compIncluded = compStatus === 'included';
+    const compPartial  = compIncluded && includedCompetitorChannels > 0;
 
     return `
       ${renderSection('ORM Package Type')}
@@ -97,12 +100,14 @@ export const ormModule = {
           priceLabel: compStatus === 'addon' ? `$${PRICES.ormCompetitorPerLocationChannel}/location-channel/mo` : '',
           status: compStatus, checked: s.competitorOn,
         })}
-        <div id="orm-comp-channels-wrap" style="display:${s.competitorOn && !compUnavail && !compIncluded ? 'block' : 'none'}">
+        <div id="orm-comp-channels-wrap" style="display:${compPartial || (s.competitorOn && !compUnavail && !compIncluded) ? 'block' : 'none'}">
           ${renderNumberField({
             id: 'orm-comp-channels',
             label: 'Competitor Location-Channels',
             value: s.competitorLocationChannels,
-            hint: `Competitors × locations per competitor × review channels. $${PRICES.ormCompetitorPerLocationChannel}/mo each.`,
+            hint: compPartial
+              ? `${includedCompetitorChannels} included · excess at $${PRICES.ormCompetitorPerLocationChannel}/channel/mo`
+              : `Competitors × locations per competitor × review channels. $${PRICES.ormCompetitorPerLocationChannel}/mo each.`,
           })}
         </div>
 
@@ -231,13 +236,22 @@ export const ormModule = {
     }
 
     // ── Add-ons (driven by active tier's rules) ────────────────────────────
-    const { compStatus, ticketStatus, includedUsers } = addonRules(s);
+    const { compStatus, ticketStatus, includedUsers, includedCompetitorChannels } = addonRules(s);
 
     if (s.competitorOn && compStatus === 'addon' && s.competitorLocationChannels > 0)
       lines.push({
         label:  `Competitor analysis (${s.competitorLocationChannels} location-channels × ${fmt(PRICES.ormCompetitorPerLocationChannel)})`,
         amount: round2(s.competitorLocationChannels * PRICES.ormCompetitorPerLocationChannel),
       });
+
+    if (compStatus === 'included' && includedCompetitorChannels > 0) {
+      const excessChannels = Math.max(0, s.competitorLocationChannels - includedCompetitorChannels);
+      if (excessChannels > 0)
+        lines.push({
+          label:  `Competitor analysis — excess channels (${excessChannels} × ${fmt(PRICES.ormCompetitorPerLocationChannel)})`,
+          amount: round2(excessChannels * PRICES.ormCompetitorPerLocationChannel),
+        });
+    }
 
     if (s.ticketOn && ticketStatus === 'addon')
       lines.push({ label: 'Ticket creation & management', amount: PRICES.ormTicketBasic });

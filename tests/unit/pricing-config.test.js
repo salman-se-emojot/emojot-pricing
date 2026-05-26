@@ -67,24 +67,24 @@ describe('ORM tier structure integrity', () => {
   const adminTiers = TIERS.orm.admin;
   const nonAdminTiers = TIERS.orm.nonAdmin;
 
-  it('Admin Connect has basic / standard / premium', () => {
-    expect(Object.keys(adminTiers)).toEqual(['basic', 'standard', 'premium']);
+  it('Admin Connect has basic / standard / enterprise', () => {
+    expect(Object.keys(adminTiers)).toEqual(['basic', 'standard', 'enterprise']);
   });
 
-  it('Non-Admin Connect has basic / standard / premium', () => {
-    expect(Object.keys(nonAdminTiers)).toEqual(['basic', 'standard', 'premium']);
+  it('Non-Admin Connect has basic / standard / enterprise', () => {
+    expect(Object.keys(nonAdminTiers)).toEqual(['basic', 'standard', 'enterprise']);
   });
 
   it('Admin tier prices: $50 / $250 / $500', () => {
     expect(adminTiers.basic.base).toBe(50);
     expect(adminTiers.standard.base).toBe(250);
-    expect(adminTiers.premium.base).toBe(500);
+    expect(adminTiers.enterprise.base).toBe(500);
   });
 
   it('Non-Admin tier prices: $150 / $350 / $1250', () => {
     expect(nonAdminTiers.basic.base).toBe(150);
     expect(nonAdminTiers.standard.base).toBe(350);
-    expect(nonAdminTiers.premium.base).toBe(1250);
+    expect(nonAdminTiers.enterprise.base).toBe(1250);
   });
 
   it('Admin Basic has competitor: unavailable', () => {
@@ -95,8 +95,9 @@ describe('ORM tier structure integrity', () => {
     expect(adminTiers.standard.competitor).toBe('addon');
   });
 
-  it('Admin Premium has competitor: included', () => {
-    expect(adminTiers.premium.competitor).toBe('included');
+  it('Admin Enterprise has competitor: included with 3 free channels', () => {
+    expect(adminTiers.enterprise.competitor).toBe('included');
+    expect(adminTiers.enterprise.competitorChannelsIncluded).toBe(3);
   });
 
   it('every admin tier has required fields', () => {

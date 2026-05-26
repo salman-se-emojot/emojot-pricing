@@ -35,7 +35,10 @@ const TIER_FEATURE_PRIORITY = [
   'ticket',
 ];
 
-function normalizeTierFeatureValue(key, value) {
+function normalizeTierFeatureValue(key, value, tier = {}) {
+  if (key === 'competitor' && value === 'included' && tier.competitorChannelsIncluded) {
+    return `${tier.competitorChannelsIncluded} included`;
+  }
   if (value === 'included') return 'Included';
   if (value === 'addon') return 'Add-on';
   if (value === 'unavailable') return 'Not available';
@@ -50,7 +53,7 @@ function tierHighlights(tier) {
   const keys = TIER_FEATURE_PRIORITY.filter(key => key in tier);
   return keys.slice(0, 7).map(key => {
     const label = TIER_FEATURE_LABELS[key] ?? key;
-    const value = normalizeTierFeatureValue(key, tier[key]);
+    const value = normalizeTierFeatureValue(key, tier[key], tier);
     return `${label}: ${value}`;
   });
 }

@@ -98,14 +98,14 @@ export const DEFAULT_PRICING_CONFIG = {
 
     orm: {
       admin: {
-        basic:    { id: 'basic',    label: 'Basic',    base: 50,   locations: 5,   users: 2,  competitor: 'unavailable', ticket: 'addon'    },
-        standard: { id: 'standard', label: 'Standard', base: 250,  locations: 25,  users: 5,  competitor: 'addon',       ticket: 'included' },
-        premium:  { id: 'premium',  label: 'Premium',  base: 500,  locations: 100, users: 10, competitor: 'included',    ticket: 'included' },
+        basic:      { id: 'basic',       label: 'Basic',       base: 50,   locations: 5,   users: 2,  competitor: 'unavailable', ticket: 'addon'    },
+        standard:   { id: 'standard',    label: 'Standard',    base: 250,  locations: 25,  users: 5,  competitor: 'addon',       ticket: 'included' },
+        enterprise: { id: 'enterprise',  label: 'Enterprise',  base: 500,  locations: 100, users: 10, competitor: 'included',    competitorChannelsIncluded: 3, ticket: 'included' },
       },
       nonAdmin: {
-        basic:    { id: 'basic',    label: 'Basic',    base: 150,  locations: 1,  users: 2,  competitor: 'unavailable', ticket: 'addon'    },
-        standard: { id: 'standard', label: 'Standard', base: 350,  locations: 3,  users: 5,  competitor: 'addon',       ticket: 'included' },
-        premium:  { id: 'premium',  label: 'Premium',  base: 1250, locations: 15, users: 10, competitor: 'included',    ticket: 'included' },
+        basic:      { id: 'basic',       label: 'Basic',       base: 150,  locations: 1,  users: 2,  competitor: 'unavailable', ticket: 'addon'    },
+        standard:   { id: 'standard',    label: 'Standard',    base: 350,  locations: 3,  users: 5,  competitor: 'addon',       ticket: 'included' },
+        enterprise: { id: 'enterprise',  label: 'Enterprise',  base: 1250, locations: 15, users: 10, competitor: 'included',    competitorChannelsIncluded: 3, ticket: 'included' },
       },
     },
 

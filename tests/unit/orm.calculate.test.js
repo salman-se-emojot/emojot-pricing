@@ -25,8 +25,8 @@ describe('ORM — Admin Connect baseline', () => {
     expect(r.subtotal).toBe(250);
   });
 
-  it('Admin Premium: $500 base, 100 locations included → no excess', () => {
-    const r = calc({ packageType: 'admin', adminTier: 'premium', adminLocations: 100 });
+  it('Admin Enterprise: $500 base, 100 locations included → no excess', () => {
+    const r = calc({ packageType: 'admin', adminTier: 'enterprise', adminLocations: 100 });
     expect(r.subtotal).toBe(500);
   });
 });
@@ -73,8 +73,8 @@ describe('ORM — Non-Admin Connect baseline', () => {
     expect(r.subtotal).toBe(350);
   });
 
-  it('Non-Admin Premium: $1250 base, 15 locations included → no excess', () => {
-    const r = calc({ packageType: 'nonAdmin', nonAdminTier: 'premium', nonAdminLocations: 15 });
+  it('Non-Admin Enterprise: $1250 base, 15 locations included → no excess', () => {
+    const r = calc({ packageType: 'nonAdmin', nonAdminTier: 'enterprise', nonAdminLocations: 15 });
     expect(r.subtotal).toBe(1250);
   });
 });
@@ -142,12 +142,21 @@ describe('ORM — Competitor Analysis add-on', () => {
     expect(line.amount).toBe(75);        // 3 × $25
   });
 
-  it('Admin Premium (included): not charged', () => {
+  it('Admin Enterprise (3 included): within quota → no competitor charge', () => {
     const r = calc({
-      packageType: 'admin', adminTier: 'premium',
-      competitorOn: true, competitorLocationChannels: 5,
+      packageType: 'admin', adminTier: 'enterprise',
+      competitorLocationChannels: 3,
     });
     expect(r.lines.some(l => l.label.includes('ompetitor'))).toBe(false);
+  });
+
+  it('Admin Enterprise (3 included): 5 channels → 2 excess × $25 = $50', () => {
+    const r = calc({
+      packageType: 'admin', adminTier: 'enterprise',
+      competitorLocationChannels: 5,
+    });
+    const line = r.lines.find(l => l.label.includes('ompetitor'));
+    expect(line.amount).toBe(50);   // 2 excess × $25
   });
 
   it('competitorOn: false → not charged even when status is addon', () => {

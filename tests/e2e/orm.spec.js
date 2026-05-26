@@ -64,8 +64,8 @@ test('Admin Standard tier: base $250', async ({ page }) => {
   expect(total).toBe(250);
 });
 
-test('Admin Premium tier: base $500', async ({ page }) => {
-  await setTier(page, 'orm-admin', 'premium');
+test('Admin Enterprise tier: base $500', async ({ page }) => {
+  await setTier(page, 'orm-admin', 'enterprise');
   const total = await getTotalAmount(page);
   expect(total).toBe(500);
 });
@@ -85,9 +85,9 @@ test('Non-Admin Standard tier: base $350', async ({ page }) => {
   expect(total).toBe(350);
 });
 
-test('Non-Admin Premium tier: base $1250', async ({ page }) => {
+test('Non-Admin Enterprise tier: base $1250', async ({ page }) => {
   await setRadio(page, 'orm-package', 'nonAdmin');
-  await setTier(page, 'orm-non', 'premium');
+  await setTier(page, 'orm-non', 'enterprise');
   const total = await getTotalAmount(page);
   expect(total).toBe(1250);
 });
@@ -126,9 +126,10 @@ test('Competitor analysis charges $25/location-channel', async ({ page }) => {
   expect(total).toBeCloseTo(325, 0);             // $250 + $75
 });
 
-test('Competitor is included in Admin Premium (toggle disabled)', async ({ page }) => {
-  await setTier(page, 'orm-admin', 'premium');
+test('Competitor is included in Admin Enterprise (toggle disabled, channels field visible)', async ({ page }) => {
+  await setTier(page, 'orm-admin', 'enterprise');
   await expect(page.locator('#orm-competitor')).toBeDisabled();
+  await expect(page.locator('#orm-comp-channels-wrap')).toBeVisible();
 });
 
 // ── Add-ons — Ticket Management ──────────────────────────────────────
