@@ -205,6 +205,18 @@ body {
   display: none;
 }
 
+.clear-btn-prominent {
+  color: #c53030;
+  border-color: #fc8181;
+  background: #fff5f5;
+}
+
+.clear-btn-prominent:hover {
+  background: #fed7d7;
+  border-color: #e53e3e;
+  color: #9b2c2c;
+}
+
 .chevron {
   font-size: 11px;
   color: var(--gray-400);

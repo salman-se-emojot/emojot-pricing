@@ -25,11 +25,25 @@ document.addEventListener('DOMContentLoaded', () => {
     mountModuleCard(id);
   }
   updateUXIBadge();
+  updateClearBtn();
 
   // React to all state changes
   appState.subscribe(() => {
     updateSummary();
     pushHash();
+  });
+
+  // Clear all modules button
+  const clearBtn = document.getElementById('btn-clear-modules');
+  clearBtn?.addEventListener('click', e => {
+    e.stopPropagation(); // don't collapse the card
+    for (const id of [...appState.activeModules]) {
+      appState.deactivateModule(id);
+      setModuleToggleUI(id, false);
+      document.getElementById(`card-${id}`)?.remove();
+    }
+    updateUXIBadge();
+    updateClearBtn();
   });
 
   // Export buttons
@@ -125,6 +139,7 @@ function toggleModule(id) {
     mountModuleCard(id);
   }
   updateUXIBadge();
+  updateClearBtn();
 }
 
 function setModuleToggleUI(id, active) {
@@ -135,6 +150,11 @@ function setModuleToggleUI(id, active) {
   if (check) check.innerHTML = active ? '✓' : '';
   if (badge) badge.classList.toggle('active', active);
   if (state) state.textContent = active ? 'Added' : 'Add module';
+}
+
+function updateClearBtn() {
+  const btn = document.getElementById('btn-clear-modules');
+  if (btn) btn.style.display = appState.activeModules.length > 0 ? '' : 'none';
 }
 
 function updateUXIBadge() {
