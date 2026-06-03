@@ -34,16 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Clear all modules button
-  const clearBtn = document.getElementById('btn-clear-modules');
-  clearBtn?.addEventListener('click', e => {
-    e.stopPropagation(); // don't collapse the card
+  document.getElementById('btn-clear-modules')?.addEventListener('click', () => {
     for (const id of [...appState.activeModules]) {
       appState.deactivateModule(id);
       setModuleToggleUI(id, false);
       document.getElementById(`card-${id}`)?.remove();
     }
     updateUXIBadge();
-    updateClearBtn();
   });
 
   // Export buttons
