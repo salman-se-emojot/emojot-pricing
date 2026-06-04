@@ -30,7 +30,6 @@ export const DEFAULT_PRICING_CONFIG = {
     { max: 3000, rate: 0.75 },
     { max: 9999, rate: 0.50 },
   ],
-
   // ORM Admin Connect Location Slabs (all-nodes × rate)
   // Google + Facebook only — requires admin API access.
   ORM_ADMIN_CONNECT_SLABS: [
