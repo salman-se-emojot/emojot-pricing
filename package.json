@@ -37,7 +37,8 @@
       {
         "provider": "github",
         "owner": "salman-se-emojot",
-        "repo": "emojot-pricing"
+        "repo": "emojot-pricing",
+        "releaseType": "release"
       }
     ],
     "mac": {
