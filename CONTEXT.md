@@ -20,3 +20,12 @@ The Electron-wrapped version of the Calculator distributed to Emojot sales/presa
 
 ## Staff
 Internal Emojot sales and presales users — the only audience for the Desktop App. Not customers or external parties.
+
+## Discount Preset
+A named, pre-approved percentage discount that Staff can apply to a quote. Presets are defined in Pricing Config (alongside tiers and slabs) and are therefore editable from the Admin Panel without a code deployment. Examples: a sales rep's personal code (10%), Partner (15%), Pilot (25%).
+
+## Discount
+The single Discount Preset selected for a given quote. Applied to the Base Total before the billing-cycle surcharge is calculated. Only one Discount may be active per quote (no stacking). Defaults to "None". Persisted in the URL hash and included in all exports (receipt and copied text). Hidden when any module in the quote requires a contact-sales price.
+
+## Base Total
+The sum of all active module subtotals before any billing-cycle surcharge or Discount is applied.

@@ -4,6 +4,7 @@
 class AppState {
   constructor() {
     this.billing = 'annual';
+    this.discount = null;      // active Discount Preset id, or null for no discount
     this.activeModules = [];   // ordered array of active module IDs
     this.moduleStates = {};    // moduleId → module-specific state object
     this._listeners = new Set();
@@ -21,6 +22,11 @@ class AppState {
 
   setBilling(cycle) {
     this.billing = cycle;
+    this._notify();
+  }
+
+  setDiscount(id) {
+    this.discount = id || null;
     this._notify();
   }
 

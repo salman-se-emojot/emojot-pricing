@@ -16,6 +16,7 @@ export function serializeState(appState) {
   const p = new URLSearchParams();
 
   p.set('bil', BILLING_SHORT[appState.billing] ?? 'a');
+  if (appState.discount) p.set('disc', appState.discount);
 
   if (appState.activeModules.length > 0) {
     p.set('mods', appState.activeModules.join(','));
@@ -86,7 +87,8 @@ export function deserializeState(hashString) {
   let p;
   try { p = new URLSearchParams(raw); } catch (_) { return null; }
 
-  const billing = BILLING_LONG[p.get('bil')] ?? null;
+  const billing  = BILLING_LONG[p.get('bil')] ?? null;
+  const discount = p.get('disc') ?? null;
   const modsParam = p.get('mods');
   if (!modsParam) return null;
 
@@ -157,7 +159,7 @@ export function deserializeState(hashString) {
     }
   }
 
-  return { billing, moduleIds, moduleStates };
+  return { billing, discount, moduleIds, moduleStates };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

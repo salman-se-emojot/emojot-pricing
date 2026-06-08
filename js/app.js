@@ -5,9 +5,13 @@ import { appState } from './core/state.js';
 import { calculate } from './core/engine.js';
 import { saveFocus, restoreFocus, fmt, round2 } from './core/utils.js';
 import { serializeState, deserializeState } from './core/url-state.js';
-import { BILLING_CYCLES } from './config/pricing.js';
+import { BILLING_CYCLES, DISCOUNTS } from './config/pricing.js';
 import { MODULE_REGISTRY } from './modules/registry.js';
 import { renderSummary, renderOpenItemsBanner } from './components/Summary.js';
+
+// Tracks the raw text in the discount input across re-renders.
+// Separate from appState.discount (which stores the matched preset id).
+let _discountInputText = '';
 
 // ── Bootstrap ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -52,8 +56,13 @@ function restoreFromHash() {
   const decoded = deserializeState(window.location.hash);
   if (!decoded) return;
 
-  const { billing, moduleIds, moduleStates } = decoded;
-  if (billing) appState.setBilling(billing);
+  const { billing, discount, moduleIds, moduleStates } = decoded;
+  if (billing)  appState.setBilling(billing);
+  if (discount) {
+    appState.setDiscount(discount);
+    // Pre-populate the input with the preset's display label
+    _discountInputText = DISCOUNTS.find(d => d.id === discount)?.label ?? '';
+  }
 
   for (const id of moduleIds) {
     const mod = MODULE_REGISTRY.find(m => m.id === id);
@@ -224,7 +233,24 @@ function updateSummary() {
     title.innerHTML = `UXI Pricing Summary <span class="uxi-badge">UXI</span>`;
   }
 
-  panel.innerHTML = renderSummary(output, appState);
+  const focus = saveFocus();
+  panel.innerHTML = renderSummary(output, appState, _discountInputText);
+  restoreFocus(focus);
+
+  // Bind discount input (re-rendered on every summary update).
+  // Looks up the typed name against DISCOUNTS presets (case-insensitive).
+  document.getElementById('discount-input')?.addEventListener('input', e => {
+    _discountInputText = e.target.value;
+    const q = e.target.value.trim().toLowerCase();
+    const match = DISCOUNTS.find(d => d.id === q || d.label.toLowerCase() === q);
+    appState.setDiscount(match ? match.id : null);
+  });
+
+  // Clear button on the applied-discount chip
+  document.getElementById('discount-clear-btn')?.addEventListener('click', () => {
+    _discountInputText = '';
+    appState.setDiscount(null);
+  });
 
   // Show/hide export bar based on whether any module is active
   const exportBar = document.getElementById('export-bar');
@@ -272,7 +298,7 @@ function buildReceiptHTML() {
   if (appState.activeModules.length === 0) return '';
 
   const output = calculate(appState);
-  const { results, billing, baseTotal, billedTotal, hasAnyContactSales } = output;
+  const { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales } = output;
 
   const MODULE_LABELS = {
     xm:  'XM — Experience Management',
@@ -314,15 +340,24 @@ function buildReceiptHTML() {
   if (hasAnyContactSales) {
     totalsHTML = `<tr><td colspan="2" class="contact-sales total-contact">Custom quote required — contact Emojot sales</td></tr>`;
   } else {
+    const showBreakdown = discountPreset || billing.surchargePct > 0;
+    if (showBreakdown) {
+      const baseLbl = billing.surchargePct > 0 ? 'Base total (annual rate)' : 'Base total';
+      totalsHTML += `<tr><td class="line-label">${baseLbl}</td><td class="line-amt">${fmt(baseTotal)}/mo</td></tr>`;
+    }
+    if (discountPreset) {
+      const pct = Math.round(discountPreset.rate * 100);
+      totalsHTML += `
+        <tr>
+          <td class="line-label" style="color:#0f9d58">Discount — ${discountPreset.label} (${pct}%)</td>
+          <td class="line-amt" style="color:#0f9d58">−${fmt(discountAmount)}/mo</td>
+        </tr>`;
+    }
     if (billing.surchargePct > 0) {
       totalsHTML += `
         <tr>
-          <td class="line-label">Base total (annual rate)</td>
-          <td class="line-amt">${fmt(baseTotal)}/mo</td>
-        </tr>
-        <tr>
           <td class="line-label">Billing surcharge (+${billing.surchargePct}%)</td>
-          <td class="line-amt">+${fmt(round2(baseTotal * (billing.multiplier - 1)))}/mo</td>
+          <td class="line-amt">+${fmt(round2(discountedBase * (billing.multiplier - 1)))}/mo</td>
         </tr>`;
     }
     totalsHTML += `
@@ -453,7 +488,7 @@ function buildTextQuote() {
   if (appState.activeModules.length === 0) return '';
 
   const output = calculate(appState);
-  const { results, billing, baseTotal, billedTotal, hasAnyContactSales } = output;
+  const { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales } = output;
   const MODULE_LABELS = {
     xm:  'XM — Experience Management',
     ccm: 'CCM — Complaints Management',
@@ -490,11 +525,20 @@ function buildTextQuote() {
   if (hasAnyContactSales) {
     lines.push('TOTAL: Custom quote required — contact sales');
   } else {
-    if (billing.surchargePct > 0) {
-      lines.push(`${'Base total (annual rate)'.padEnd(36)}${fmt(baseTotal).padStart(8)}/mo`);
-      lines.push(`${'Billing surcharge (+' + billing.surchargePct + '%)'.padEnd(36)}${('+' + fmt(round2(baseTotal * (billing.multiplier - 1)))).padStart(8)}/mo`);
-      lines.push('');
+    const showBreakdown = discountPreset || billing.surchargePct > 0;
+    if (showBreakdown) {
+      const baseLbl = billing.surchargePct > 0 ? 'Base total (annual rate)' : 'Base total';
+      lines.push(`${baseLbl.padEnd(36)}${fmt(baseTotal).padStart(8)}/mo`);
     }
+    if (discountPreset) {
+      const pct = Math.round(discountPreset.rate * 100);
+      const discLbl = `Discount — ${discountPreset.label} (${pct}%)`;
+      lines.push(`${discLbl.padEnd(36)}${('−' + fmt(discountAmount)).padStart(8)}/mo`);
+    }
+    if (billing.surchargePct > 0) {
+      lines.push(`${'Billing surcharge (+' + billing.surchargePct + '%)'.padEnd(36)}${('+' + fmt(round2(discountedBase * (billing.multiplier - 1)))).padStart(8)}/mo`);
+    }
+    if (showBreakdown) lines.push('');
     lines.push(`TOTAL: ${fmt(billedTotal)}/mo`);
     lines.push(`Annual total: ${fmt(round2(billedTotal * 12))}/yr`);
   }

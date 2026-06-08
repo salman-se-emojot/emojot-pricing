@@ -1,12 +1,13 @@
 // Unit tests — js/core/url-state.js
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { serializeState, deserializeState } from '../../js/core/url-state.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function makeAppState({ billing = 'annual', modules = [] } = {}) {
+function makeAppState({ billing = 'annual', discount = null, modules = [] } = {}) {
   const moduleStates = Object.fromEntries(modules.map(([id, s]) => [id, s]));
   return {
     billing,
+    discount,
     activeModules: modules.map(([id]) => id),
     getModule(id) { return moduleStates[id]; },
   };
@@ -247,5 +248,88 @@ describe('deserializeState — unknown modules', () => {
     expect(r.moduleIds).toContain('xm');
     expect(r.moduleIds).toContain('fakemod'); // still in list, just no state
     expect(r.moduleStates.fakemod).toBeUndefined();
+  });
+});
+
+// ── Discount preset — serialization ──────────────────────────────────────────
+describe('serializeState — discount encoding', () => {
+  it('encodes discount id as disc param', () => {
+    const s = makeAppState({ discount: 'pilot', modules: [['xm', XM_DEFAULTS]] });
+    expect(serializeState(s)).toContain('disc=pilot');
+  });
+
+  it('encodes sampath discount', () => {
+    const s = makeAppState({ discount: 'sampath', modules: [['xm', XM_DEFAULTS]] });
+    expect(serializeState(s)).toContain('disc=sampath');
+  });
+
+  it('null discount omits disc param', () => {
+    const s = makeAppState({ discount: null, modules: [['xm', XM_DEFAULTS]] });
+    expect(serializeState(s)).not.toContain('disc=');
+  });
+
+  it('empty string discount omits disc param', () => {
+    const s = makeAppState({ discount: '', modules: [['xm', XM_DEFAULTS]] });
+    expect(serializeState(s)).not.toContain('disc=');
+  });
+});
+
+// ── Discount preset — deserialization ────────────────────────────────────────
+describe('deserializeState — discount decoding', () => {
+  it('decodes disc=pilot → discount: "pilot"', () => {
+    const r = deserializeState('#bil=a&disc=pilot&mods=xm&xm_t=basic');
+    expect(r.discount).toBe('pilot');
+  });
+
+  it('decodes disc=sampath → discount: "sampath"', () => {
+    const r = deserializeState('#bil=a&disc=sampath&mods=xm&xm_t=basic');
+    expect(r.discount).toBe('sampath');
+  });
+
+  it('decodes disc=partner → discount: "partner"', () => {
+    const r = deserializeState('#bil=a&disc=partner&mods=xm&xm_t=basic');
+    expect(r.discount).toBe('partner');
+  });
+
+  it('missing disc param → discount: null', () => {
+    const r = deserializeState('#bil=a&mods=xm&xm_t=basic');
+    expect(r.discount).toBeNull();
+  });
+});
+
+// ── Discount preset — full round-trip ────────────────────────────────────────
+describe('round-trip — discount field', () => {
+  it('pilot discount survives serialize → deserialize', () => {
+    const s = makeAppState({ discount: 'pilot', modules: [['xm', XM_DEFAULTS]] });
+    const r = deserializeState('#' + serializeState(s));
+    expect(r.discount).toBe('pilot');
+  });
+
+  it('partner discount survives round-trip', () => {
+    const s = makeAppState({ discount: 'partner', modules: [['slt', SLT_DEFAULTS]] });
+    const r = deserializeState('#' + serializeState(s));
+    expect(r.discount).toBe('partner');
+  });
+
+  it('null discount survives round-trip as null', () => {
+    const s = makeAppState({ discount: null, modules: [['xm', XM_DEFAULTS]] });
+    const r = deserializeState('#' + serializeState(s));
+    expect(r.discount).toBeNull();
+  });
+
+  it('discount preserved alongside multi-module state', () => {
+    const s = makeAppState({
+      billing: 'monthly',
+      discount: 'gimhani',
+      modules: [
+        ['xm',  { ...XM_DEFAULTS, tier: 'standard' }],
+        ['slt', { ...SLT_DEFAULTS, youtubeOn: true }],
+      ],
+    });
+    const r = deserializeState('#' + serializeState(s));
+    expect(r.discount).toBe('gimhani');
+    expect(r.billing).toBe('monthly');
+    expect(r.moduleStates.xm.tier).toBe('standard');
+    expect(r.moduleStates.slt.youtubeOn).toBe(true);
   });
 });

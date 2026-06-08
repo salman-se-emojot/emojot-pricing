@@ -127,6 +127,18 @@ export const DEFAULT_PRICING_CONFIG = {
     },
   },
 
+  // Discount Presets — named, pre-approved percentage discounts (ADR 0002)
+  // Applied to Base Total before the billing-cycle surcharge. Single selection only.
+  DISCOUNTS: [
+    { id: 'sampath', label: 'Sampath', rate: 0.10 },
+    { id: 'anaz',    label: 'Anaz',    rate: 0.10 },
+    { id: 'aqeel',   label: 'Aqeel',   rate: 0.10 },
+    { id: 'gimhani', label: 'Gimhani', rate: 0.10 },
+    { id: 'viraj',   label: 'Viraj',   rate: 0.10 },
+    { id: 'partner', label: 'Partner', rate: 0.15 },
+    { id: 'pilot',   label: 'Pilot',   rate: 0.25 },
+  ],
+
   // Add-on Unit Prices (USD/month)
   PRICES: {
     sensor:              50,
@@ -206,6 +218,7 @@ export const ORM_ADMIN_CONNECT_SLABS = ACTIVE_PRICING_CONFIG.ORM_ADMIN_CONNECT_S
 export const ORM_NON_ADMIN_CONNECT_SLABS = ACTIVE_PRICING_CONFIG.ORM_NON_ADMIN_CONNECT_SLABS;
 export const TIERS = ACTIVE_PRICING_CONFIG.TIERS;
 export const PRICES = ACTIVE_PRICING_CONFIG.PRICES;
+export const DISCOUNTS = ACTIVE_PRICING_CONFIG.DISCOUNTS;
 
 export function getDefaultPricingConfig() {
   return deepClone(DEFAULT_PRICING_CONFIG);
