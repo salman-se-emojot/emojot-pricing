@@ -7,7 +7,6 @@ import { TIERS, DISCOUNTS } from '../config/pricing.js';
 
 const MODULE_LABELS = {
   xm:  'XM — Experience Management',
-  ccm: 'CCM — Complaints Management',
   orm: 'ORM — Online Reputation',
   slt: 'SLT — Social Listening',
 };

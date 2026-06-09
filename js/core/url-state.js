@@ -1,6 +1,6 @@
 // URL state persistence
 // Encodes the full app configuration into the URL hash so quotes are shareable.
-// Format: #bil=a&mods=xm,ccm&xm_t=basic&xm_tp=5&...
+// Format: #bil=a&mods=xm,orm&xm_t=basic&xm_tp=5&...
 //
 // Design decisions:
 //   - Short keys to keep URLs readable
@@ -35,19 +35,6 @@ export function serializeState(appState) {
         p.set('xm_em',  s.emosightOn ? 1 : 0);
         p.set('xm_do',  s.domainOn ? 1 : 0);
         p.set('xm_us',  s.users);
-        break;
-
-      case 'ccm':
-        p.set('ccm_t',   s.tier);
-        p.set('ccm_tp',  s.touchpoints);
-        p.set('ccm_se',  s.sensors);
-        p.set('ccm_db',  s.dashboards);
-        p.set('ccm_wf',  s.workflows);
-        p.set('ccm_br',  s.brandOn ? 1 : 0);
-        p.set('ccm_brc', s.brandCount);
-        p.set('ccm_em',  s.emosightOn ? 1 : 0);
-        p.set('ccm_do',  s.domainOn ? 1 : 0);
-        p.set('ccm_us',  s.users);
         break;
 
       case 'orm':
