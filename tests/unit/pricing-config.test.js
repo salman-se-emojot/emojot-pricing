@@ -24,7 +24,7 @@ describe('Billing cycles', () => {
   });
 });
 
-describe('XM/CCM Touchpoint slabs — monotonically decreasing rates', () => {
+describe('XM Touchpoint slabs — monotonically decreasing rates', () => {
   it('rates decrease as volume increases', () => {
     const rates = TOUCHPOINT_SLABS.map(s => s.rate);
     for (let i = 1; i < rates.length; i++) {
@@ -121,25 +121,15 @@ describe('ORM tier structure integrity', () => {
   });
 });
 
-describe('XM / CCM tier structure integrity', () => {
+describe('XM tier structure integrity', () => {
   it('XM has basic / standard / enterprise', () => {
     expect(Object.keys(TIERS.xm)).toEqual(['basic', 'standard', 'enterprise']);
-  });
-
-  it('CCM has basic / standard / enterprise', () => {
-    expect(Object.keys(TIERS.ccm)).toEqual(['basic', 'standard', 'enterprise']);
   });
 
   it('XM base prices: $50 / $250 / $1000', () => {
     expect(TIERS.xm.basic.base).toBe(50);
     expect(TIERS.xm.standard.base).toBe(250);
     expect(TIERS.xm.enterprise.base).toBe(1000);
-  });
-
-  it('CCM base prices: $80 / $300 / $1000', () => {
-    expect(TIERS.ccm.basic.base).toBe(80);
-    expect(TIERS.ccm.standard.base).toBe(300);
-    expect(TIERS.ccm.enterprise.base).toBe(1000);
   });
 });
 
@@ -163,7 +153,6 @@ describe('Add-on unit prices', () => {
   it('sensor = $50', () => expect(PRICES.sensor).toBe(50));
   it('dashboard = $20', () => expect(PRICES.dashboard).toBe(20));
   it('user = $2', () => expect(PRICES.user).toBe(2));
-  it('workflow = $30', () => expect(PRICES.workflow).toBe(30));
   it('emosight = $30', () => expect(PRICES.emosight).toBe(30));
   it('brand = $10', () => expect(PRICES.brand).toBe(10));
   it('domainWhitelist = $30', () => expect(PRICES.domainWhitelist).toBe(30));

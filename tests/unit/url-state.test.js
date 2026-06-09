@@ -15,12 +15,7 @@ function makeAppState({ billing = 'annual', discount = null, modules = [] } = {}
 
 const XM_DEFAULTS = {
   tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-  brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
-};
-
-const CCM_DEFAULTS = {
-  tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1, workflows: 1,
-  brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+  brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
 };
 
 const ORM_DEFAULTS = {
@@ -124,20 +119,6 @@ describe('round-trip — XM module', () => {
   it('preserves billing', () => expect(roundTrip(original).billing).toBe('quarterly'));
 });
 
-// ── Round-trip: CCM ───────────────────────────────────────────────────────────
-describe('round-trip — CCM module', () => {
-  const original = { ...CCM_DEFAULTS, tier: 'enterprise', workflows: 3, touchpoints: 50 };
-
-  function rt() {
-    const appState = makeAppState({ modules: [['ccm', original]] });
-    return deserializeState('#' + serializeState(appState)).moduleStates.ccm;
-  }
-
-  it('preserves CCM tier', () => expect(rt().tier).toBe('enterprise'));
-  it('preserves CCM workflows', () => expect(rt().workflows).toBe(3));
-  it('preserves CCM touchpoints', () => expect(rt().touchpoints).toBe(50));
-});
-
 // ── Round-trip: ORM ───────────────────────────────────────────────────────────
 describe('round-trip — ORM module', () => {
   const original = {
@@ -191,7 +172,7 @@ describe('round-trip — multi-module', () => {
     billing: 'monthly',
     modules: [
       ['xm',  { ...XM_DEFAULTS,  tier: 'standard' }],
-      ['ccm', { ...CCM_DEFAULTS, tier: 'enterprise' }],
+      ['orm', { ...ORM_DEFAULTS, adminTier: 'standard' }],
       ['slt', { ...SLT_DEFAULTS, youtubeOn: true }],
     ],
   });
@@ -203,11 +184,11 @@ describe('round-trip — multi-module', () => {
   });
 
   it('restores all three module IDs', () => {
-    expect(decoded.moduleIds).toEqual(['xm', 'ccm', 'slt']);
+    expect(decoded.moduleIds).toEqual(['xm', 'orm', 'slt']);
   });
 
   it('restores XM tier', () => expect(decoded.moduleStates.xm.tier).toBe('standard'));
-  it('restores CCM tier', () => expect(decoded.moduleStates.ccm.tier).toBe('enterprise'));
+  it('restores ORM adminTier', () => expect(decoded.moduleStates.orm.adminTier).toBe('standard'));
   it('restores SLT youtubeOn', () => expect(decoded.moduleStates.slt.youtubeOn).toBe(true));
   it('restores monthly billing', () => expect(decoded.billing).toBe('monthly'));
 });

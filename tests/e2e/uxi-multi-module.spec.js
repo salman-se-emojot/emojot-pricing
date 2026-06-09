@@ -15,13 +15,6 @@ test('XM + SLT baselines sum correctly ($50 + $130 = $180)', async ({ page }) =>
   expect(total).toBeCloseTo(180, 0);
 });
 
-test('XM + CCM baselines ($50 + $80 = $130)', async ({ page }) => {
-  await activateModule(page, 'xm');
-  await activateModule(page, 'ccm');
-  const total = await getTotalAmount(page);
-  expect(total).toBeCloseTo(130, 0);
-});
-
 test('XM + ORM baselines ($50 + $50 = $100)', async ({ page }) => {
   await activateModule(page, 'xm');
   await activateModule(page, 'orm');
@@ -29,22 +22,21 @@ test('XM + ORM baselines ($50 + $50 = $100)', async ({ page }) => {
   expect(total).toBeCloseTo(100, 0);
 });
 
-// ── All four modules ─────────────────────────────────────────────────
-test('all four modules active: base total is $50+$80+$50+$130 = $310', async ({ page }) => {
-  for (const id of ['xm', 'ccm', 'orm', 'slt']) {
+// ── All three modules ────────────────────────────────────────────────
+test('all three modules active: base total is $50+$50+$130 = $230', async ({ page }) => {
+  for (const id of ['xm', 'orm', 'slt']) {
     await activateModule(page, id);
   }
   const total = await getTotalAmount(page);
-  expect(total).toBeCloseTo(310, 0);
+  expect(total).toBeCloseTo(230, 0);
 });
 
-test('summary shows all four module sections when all active', async ({ page }) => {
-  for (const id of ['xm', 'ccm', 'orm', 'slt']) {
+test('summary shows all three module sections when all active', async ({ page }) => {
+  for (const id of ['xm', 'orm', 'slt']) {
     await activateModule(page, id);
   }
   const summaryText = await page.locator('#summary-content').innerText();
   expect(summaryText).toContain('XM — Experience Management');
-  expect(summaryText).toContain('CCM — Complaints Management');
   expect(summaryText).toContain('ORM — Online Reputation');
   expect(summaryText).toContain('SLT — Social Listening');
 });
@@ -70,8 +62,8 @@ test('quarterly surcharge applies to combined total', async ({ page }) => {
   expect(quarterlyTotal).toBeCloseTo(annualTotal * 1.075, 2);  // $193.50
 });
 
-test('monthly surcharge on all four modules', async ({ page }) => {
-  for (const id of ['xm', 'ccm', 'orm', 'slt']) {
+test('monthly surcharge on all three modules', async ({ page }) => {
+  for (const id of ['xm', 'orm', 'slt']) {
     await activateModule(page, id);
   }
   const annualTotal = await getTotalAmount(page);
@@ -111,7 +103,7 @@ test('entitlements block shows correct total user count (XM Basic: 5 + SLT Basic
 // ── UXI badge in summary ─────────────────────────────────────────────
 test('UXI badge appears in summary total block with 2+ modules', async ({ page }) => {
   await activateModule(page, 'xm');
-  await activateModule(page, 'ccm');
+  await activateModule(page, 'slt');
   await expect(page.locator('.sum-total-note .uxi-badge')).toBeVisible();
 });
 

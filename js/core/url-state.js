@@ -34,6 +34,7 @@ export function serializeState(appState) {
         p.set('xm_brc', s.brandCount);
         p.set('xm_em',  s.emosightOn ? 1 : 0);
         p.set('xm_do',  s.domainOn ? 1 : 0);
+        p.set('xm_tk',  s.ticketOn ? 1 : 0);
         p.set('xm_us',  s.users);
         break;
 
@@ -96,22 +97,8 @@ export function deserializeState(hashString) {
           brandCount:  num(p.get('xm_brc'), 1),
           emosightOn:  bool(p.get('xm_em')),
           domainOn:    bool(p.get('xm_do')),
+          ticketOn:    bool(p.get('xm_tk')),
           users:       num(p.get('xm_us'), 5),
-        };
-        break;
-
-      case 'ccm':
-        moduleStates.ccm = {
-          tier:        p.get('ccm_t')   ?? 'basic',
-          touchpoints: num(p.get('ccm_tp'), 5),
-          sensors:     num(p.get('ccm_se'), 1),
-          dashboards:  num(p.get('ccm_db'), 1),
-          workflows:   num(p.get('ccm_wf'), 1),
-          brandOn:     bool(p.get('ccm_br')),
-          brandCount:  num(p.get('ccm_brc'), 1),
-          emosightOn:  bool(p.get('ccm_em')),
-          domainOn:    bool(p.get('ccm_do')),
-          users:       num(p.get('ccm_us'), 5),
         };
         break;
 

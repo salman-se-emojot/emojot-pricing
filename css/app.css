@@ -1637,5 +1637,3 @@ input:disabled + .slider {
   color: var(--success) !important;
   font-weight: 700;
 }
-
-/* Print is handled by a dedicated receipt window — no main-page print styles needed. */

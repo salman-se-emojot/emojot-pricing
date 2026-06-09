@@ -18,7 +18,7 @@ export const OPEN_ITEMS = [
   // },
   // {
   //   id: 'sms-rates',
-  //   title: 'SMS per-country rates (XM & CCM)',
+  //   title: 'SMS per-country rates (XM)',
   //   resolved: false,
   //   note: 'SMS is post-paid at country-specific rates. Not included in this calculator — invoiced separately.',
   //   owner: 'Emojot pricing team',

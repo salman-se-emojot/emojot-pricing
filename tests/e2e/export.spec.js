@@ -1,4 +1,4 @@
-// E2E — Export bar (Copy Summary + Print / PDF)
+// E2E — Export bar (Copy Summary)
 import { test, expect } from '@playwright/test';
 import { activateModule } from './helpers.js';
 
@@ -23,10 +23,9 @@ test('export bar has Copy Summary button', async ({ page }) => {
   await expect(page.locator('#btn-copy-summary')).toContainText('Copy Summary');
 });
 
-test('export bar has Print / PDF button', async ({ page }) => {
+test('export bar does not have a Print button', async ({ page }) => {
   await activateModule(page, 'xm');
-  await expect(page.locator('#btn-print-summary')).toBeVisible();
-  await expect(page.locator('#btn-print-summary')).toContainText('Print');
+  await expect(page.locator('#btn-print-summary')).toHaveCount(0);
 });
 
 test('export bar hides again when all modules are deactivated', async ({ page }) => {
@@ -63,57 +62,4 @@ test('Copy button is disabled while showing Copied!', async ({ page }) => {
   await activateModule(page, 'xm');
   await page.locator('#btn-copy-summary').click();
   await expect(page.locator('#btn-copy-summary')).toBeDisabled({ timeout: 500 });
-});
-
-// ── Print opens a receipt popup ───────────────────────────────────────────────
-test('Print button opens a new popup window', async ({ page }) => {
-  await activateModule(page, 'xm');
-
-  const [popup] = await Promise.all([
-    page.waitForEvent('popup'),
-    page.click('#btn-print-summary'),
-  ]);
-
-  await expect(popup).toBeTruthy();
-  await popup.waitForLoadState('domcontentloaded');
-});
-
-test('Print popup contains module name in receipt', async ({ page }) => {
-  await activateModule(page, 'xm');
-
-  const [popup] = await Promise.all([
-    page.waitForEvent('popup'),
-    page.click('#btn-print-summary'),
-  ]);
-
-  await popup.waitForLoadState('domcontentloaded');
-  const body = await popup.locator('body').innerText();
-  expect(body).toContain('XM');
-});
-
-test('Print popup contains the total amount', async ({ page }) => {
-  await activateModule(page, 'xm');
-
-  const [popup] = await Promise.all([
-    page.waitForEvent('popup'),
-    page.click('#btn-print-summary'),
-  ]);
-
-  await popup.waitForLoadState('domcontentloaded');
-  const body = await popup.locator('body').innerText();
-  // Basic XM is $50/mo
-  expect(body).toContain('$50.00');
-});
-
-test('Print popup contains shareable URL in footer', async ({ page }) => {
-  await activateModule(page, 'xm');
-
-  const [popup] = await Promise.all([
-    page.waitForEvent('popup'),
-    page.click('#btn-print-summary'),
-  ]);
-
-  await popup.waitForLoadState('domcontentloaded');
-  const body = await popup.locator('body').innerText();
-  expect(body).toContain('localhost');
 });

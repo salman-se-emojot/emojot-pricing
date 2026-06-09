@@ -28,7 +28,7 @@ describe('engine — single module (XM Basic)', () => {
   it('calculates XM basic correctly and wraps in result', () => {
     const xmState = {
       tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-      brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+      brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
     };
     const out = calculate(makeState(['xm'], { xm: xmState }));
     expect(out.results).toHaveLength(1);
@@ -42,7 +42,7 @@ describe('engine — single module (XM Basic)', () => {
 describe('engine — billing cycle multipliers', () => {
   const xmState = {
     tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
   };
 
   it('annual: no surcharge (×1.0)', () => {
@@ -65,7 +65,7 @@ describe('engine — multiple modules (UXI)', () => {
   it('marks isUXI when 2+ modules active', () => {
     const xmState = {
       tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-      brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+      brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
     };
     const sltState = {
       tier: 'basic', keywords: 5, mentions: 10000, profiles: 30,
@@ -113,7 +113,7 @@ describe('engine — contact sales handling', () => {
 describe('engine — discount output fields (no discount)', () => {
   const xmState = {
     tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
   };
 
   it('discountPreset is null when no discount id set', () => {
@@ -135,7 +135,7 @@ describe('engine — discount output fields (no discount)', () => {
 describe('engine — 10% discount (Sampath preset) on XM Basic ($50)', () => {
   const xmState = {
     tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
   };
 
   it('discountPreset id matches', () => {
@@ -163,7 +163,7 @@ describe('engine — 10% discount (Sampath preset) on XM Basic ($50)', () => {
 describe('engine — 25% discount (Pilot preset)', () => {
   const xmState = {
     tier: 'standard', touchpoints: 5, sensors: 1, dashboards: 1,
-    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
   };
 
   it('discountAmount is 25% of baseTotal ($250 → $62.50)', () => {
@@ -178,7 +178,7 @@ describe('engine — 25% discount (Pilot preset)', () => {
 describe('engine — 15% discount (Partner preset)', () => {
   const xmState = {
     tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
   };
 
   it('discountAmount is 15% of $50 = $7.50', () => {
@@ -192,7 +192,7 @@ describe('engine — 15% discount (Partner preset)', () => {
 describe('engine — discount + billing surcharge compound', () => {
   const xmState = {
     tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
   };
 
   it('Pilot (25%) + monthly surcharge (+10%): $50 → $45 discounted wait, $50 × 0.75 = $37.50 → × 1.1 = $41.25', () => {
@@ -236,7 +236,7 @@ describe('engine — discount suppressed when contact-sales module present', () 
     };
     const xmState = {
       tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-      brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+      brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
     };
     const out = calculate(makeState(['orm', 'xm'], { orm: ormState, xm: xmState }, 'annual', 'sampath'));
     expect(out.hasAnyContactSales).toBe(true);
@@ -247,7 +247,7 @@ describe('engine — discount suppressed when contact-sales module present', () 
 describe('engine — unknown discount id falls back gracefully', () => {
   const xmState = {
     tier: 'basic', touchpoints: 5, sensors: 1, dashboards: 1,
-    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, users: 5,
+    brandOn: false, brandCount: 1, emosightOn: false, domainOn: false, ticketOn: false, users: 5,
   };
 
   it('unknown id → discountPreset null, no discount applied', () => {

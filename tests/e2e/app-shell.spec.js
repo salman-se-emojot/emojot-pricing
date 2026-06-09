@@ -16,8 +16,8 @@ test('summary starts empty with placeholder text', async ({ page }) => {
   await expect(page.locator('#summary-content')).toContainText('Select one or more modules');
 });
 
-test('all four module toggles are rendered', async ({ page }) => {
-  for (const id of ['xm', 'ccm', 'orm', 'slt']) {
+test('all three module toggles are rendered', async ({ page }) => {
+  for (const id of ['xm', 'orm', 'slt']) {
     await expect(page.locator(`#mtoggle-${id}`)).toBeVisible();
   }
 });
@@ -50,14 +50,14 @@ test('deactivating XM removes its card', async ({ page }) => {
 });
 
 test('activating a module marks its toggle button active', async ({ page }) => {
-  await activateModule(page, 'ccm');
-  await expect(page.locator('#mtoggle-ccm')).toHaveClass(/active/);
+  await activateModule(page, 'orm');
+  await expect(page.locator('#mtoggle-orm')).toHaveClass(/active/);
 });
 
 test('deactivating a module removes active class from toggle', async ({ page }) => {
-  await activateModule(page, 'ccm');
-  await deactivateModule(page, 'ccm');
-  await expect(page.locator('#mtoggle-ccm')).not.toHaveClass(/active/);
+  await activateModule(page, 'orm');
+  await deactivateModule(page, 'orm');
+  await expect(page.locator('#mtoggle-orm')).not.toHaveClass(/active/);
 });
 
 test('module cards appear in registry order (XM before SLT)', async ({ page }) => {

@@ -12,7 +12,7 @@ export const DEFAULT_PRICING_CONFIG = {
     monthly:   { id: 'monthly',   label: 'Monthly',   multiplier: 1.100, surchargePct: 10,  note: 'Monthly billing — +10% surcharge applied' },
   },
 
-  // XM / CCM Basic & Standard Touchpoint Slabs (all-nodes × rate)
+  // XM Basic & Standard Touchpoint Slabs (all-nodes × rate)
   // Last band extends to cover any node count — no estimated flag needed.
   TOUCHPOINT_SLABS: [
     { max: 55,    rate: 10.00 },
@@ -21,7 +21,7 @@ export const DEFAULT_PRICING_CONFIG = {
     { max: 99999, rate: 2.00  },  // 201+ nodes — standard continuation rate
   ],
 
-  // XM / CCM Enterprise Touchpoint Slabs (excess-only)
+  // XM Enterprise Touchpoint Slabs (excess-only)
   ENTERPRISE_TOUCHPOINT_SLABS: [
     { max: 200,  rate: 2.00 },
     { max: 400,  rate: 1.50 },
@@ -63,35 +63,17 @@ export const DEFAULT_PRICING_CONFIG = {
       basic: {
         id: 'basic', label: 'Basic', base: 50,
         touchpoints: 5, sensors: 1, dashboards: 1, users: 5,
-        brand: 'addon', emosight: 'addon',
+        brand: 'addon', emosight: 'addon', ticket: 'addon',
       },
       standard: {
         id: 'standard', label: 'Standard', base: 250,
         touchpoints: 25, sensors: 3, dashboards: 2, users: 25,
-        brand: 'addon', emosight: 'included',
+        brand: 'addon', emosight: 'included', ticket: 'addon',
       },
       enterprise: {
         id: 'enterprise', label: 'Enterprise', base: 1000,
         touchpoints: 100, sensors: 5, dashboards: 5, users: 100,
-        brand: 'included', emosight: 'included',
-      },
-    },
-
-    ccm: {
-      basic: {
-        id: 'basic', label: 'Basic', base: 80,
-        touchpoints: 5, sensors: 1, dashboards: 1, workflows: 1, users: 5,
-        brand: 'addon', emosight: 'addon',
-      },
-      standard: {
-        id: 'standard', label: 'Standard', base: 300,
-        touchpoints: 25, sensors: 3, dashboards: 2, workflows: 2, users: 25,
-        brand: 'addon', emosight: 'included',
-      },
-      enterprise: {
-        id: 'enterprise', label: 'Enterprise', base: 1000,
-        touchpoints: 100, sensors: 5, dashboards: 5, workflows: 5, users: 100,
-        brand: 'included', emosight: 'included',
+        brand: 'included', emosight: 'included', ticket: 'addon',
       },
     },
 
@@ -147,9 +129,9 @@ export const DEFAULT_PRICING_CONFIG = {
     emosight:            30,
     user:                 2,
     domainWhitelist:     30,
-    workflow:            30,
     ormCompetitorPerLocationChannel: 25,
     ormTicketBasic:      50,
+    xmTicket:            50,
     sltKeyword:          15,
     sltMentionBlock:     12,
     sltProfileBlock:     15,
