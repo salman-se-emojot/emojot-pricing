@@ -28,6 +28,7 @@ export const xmModule = {
     brandCount: 1,
     emosightOn: false,
     domainOn: false,
+    ticketOn: false,
     users: T.basic.users,
   }),
 
@@ -70,6 +71,8 @@ export const xmModule = {
 
         ${renderToggleRow({ id: 'xm-domain', label: 'SMS Domain Whitelisting', priceLabel: `$${PRICES.domainWhitelist}/mo`, status: 'addon', checked: s.domainOn })}
 
+        ${renderToggleRow({ id: 'xm-ticket', label: 'Ticket Management', priceLabel: `$${PRICES.xmTicket}/mo`, status: 'addon', checked: s.ticketOn })}
+
         ${renderNumberField({
           id: 'xm-users', label: 'Total Users Needed', value: s.users,
           hint: `Includes ${tier.users} users · $${PRICES.user}/user/mo above included`,
@@ -103,6 +106,7 @@ export const xmModule = {
 
     bindToggle('xm-emosight', checked => onUpdate({ emosightOn: checked }));
     bindToggle('xm-domain',   checked => onUpdate({ domainOn: checked }));
+    bindToggle('xm-ticket',   checked => onUpdate({ ticketOn: checked }));
   },
 
   calculate(s) {
@@ -140,6 +144,8 @@ export const xmModule = {
       lines.push({ label: 'Emosight AI', amount: PRICES.emosight });
     if (s.domainOn)
       lines.push({ label: 'SMS Domain Whitelisting', amount: PRICES.domainWhitelist });
+    if (s.ticketOn)
+      lines.push({ label: 'Ticket Management', amount: PRICES.xmTicket });
     const userExcess = Math.max(0, s.users - tier.users);
     if (userExcess > 0)
       lines.push({ label: `Users (${userExcess} excess × ${fmt(PRICES.user)})`, amount: round2(userExcess * PRICES.user) });

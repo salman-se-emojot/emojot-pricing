@@ -13,7 +13,7 @@
     <h1>Pricing config admin</h1>
     <p class="header-subtitle">Edit prices and limits safely, then save once when you are done.</p>
   </div>
-  <a class="header-link" href="index.html">Open Calculator</a>
+  <a class="header-link" href="index.html" id="nav-calculator">Open Calculator</a>
 </header>
 
 <main class="admin-shell">
@@ -50,5 +50,13 @@
 </main>
 
 <script type="module" src="js/admin/config-admin.js"></script>
+<script>
+  document.getElementById('nav-calculator')?.addEventListener('click', (e) => {
+    if (window.electronAPI) {
+      e.preventDefault();
+      window.electronAPI.navigate('calculator');
+    }
+  });
+</script>
 </body>
 </html>

@@ -14,7 +14,7 @@
     <p class="header-subtitle">Choose a module, compare tiers, and build a clean monthly estimate.</p>
   </div>
   <span id="uxi-header-badge"></span>
-  <a class="header-link" href="admin.html">Config admin</a>
+  <a class="header-link" href="admin.html" id="nav-admin">Config admin</a>
 </header>
 
 <div class="app-body">
@@ -66,10 +66,7 @@
       <button id="btn-copy-summary" class="export-btn">
         <span class="export-icon">📋</span> Copy Summary
       </button>
-      <button id="btn-print-summary" class="export-btn">
-        <span class="export-icon">🖨️</span> Print / PDF
-      </button>
-      <button id="btn-clear-modules" class="export-btn clear-btn-prominent">
+<button id="btn-clear-modules" class="export-btn clear-btn-prominent">
         <span class="export-icon">✕</span> Clear All
       </button>
     </div>
@@ -78,6 +75,15 @@
 </div>
 
 <script type="module" src="js/app.js"></script>
+<script>
+  // In Electron, intercept nav link to use IPC instead of page reload
+  document.getElementById('nav-admin')?.addEventListener('click', (e) => {
+    if (window.electronAPI) {
+      e.preventDefault();
+      window.electronAPI.navigate('admin');
+    }
+  });
+</script>
 
 <!-- Collapse toggle for static cards (billing, modules) -->
 <script>

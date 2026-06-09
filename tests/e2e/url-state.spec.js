@@ -107,15 +107,15 @@ test('URL hash restores billing cycle', async ({ page }) => {
 });
 
 test('URL hash restores multiple modules', async ({ page }) => {
-  await page.goto('/#bil=a&mods=xm%2Cccm&xm_t=basic&xm_tp=5&xm_se=1&xm_db=1&xm_br=0&xm_brc=1&xm_em=0&xm_do=0&xm_us=5&ccm_t=basic&ccm_tp=5&ccm_se=1&ccm_db=1&ccm_wf=1&ccm_br=0&ccm_brc=1&ccm_em=0&ccm_do=0&ccm_us=5');
+  await page.goto('/#bil=a&mods=xm%2Cslt&xm_t=basic&xm_tp=5&xm_se=1&xm_db=1&xm_br=0&xm_brc=1&xm_em=0&xm_do=0&xm_us=5&slt_t=basic&slt_kw=5&slt_me=10000&slt_pr=30&slt_fl=0&slt_yt=0&slt_us=5');
   await page.waitForSelector('#card-body-xm', { state: 'visible' });
-  await page.waitForSelector('#card-body-ccm', { state: 'visible' });
+  await page.waitForSelector('#card-body-slt', { state: 'visible' });
 
   await expect(page.locator('#card-xm')).toBeVisible();
-  await expect(page.locator('#card-ccm')).toBeVisible();
-  // XM $50 + CCM $80 = $130
+  await expect(page.locator('#card-slt')).toBeVisible();
+  // XM $50 + SLT $130 = $180
   const total = await getTotalAmount(page);
-  expect(total).toBe(130);
+  expect(total).toBe(180);
 });
 
 test('URL hash restores toggled add-ons (domainOn = true)', async ({ page }) => {

@@ -2,9 +2,14 @@
   "name": "emojot-pricing-calculator",
   "version": "1.0.0",
   "description": "Emojot pricing calculator — component-based, config-driven",
+  "main": "electron/main.js",
   "scripts": {
     "start": "npx serve . --listen 3000",
     "dev": "npx serve . --listen 3000",
+    "electron": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --mac --win",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:unit:coverage": "vitest run --coverage",
@@ -14,9 +19,46 @@
   },
   "type": "module",
   "private": true,
+  "build": {
+    "appId": "com.emojot.pricing-calculator",
+    "productName": "Emojot Pricing Calculator",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "admin.html",
+      "css/**",
+      "js/**",
+      "assets/**",
+      "electron/**"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "salman-se-emojot",
+        "repo": "emojot-pricing",
+        "releaseType": "release"
+      }
+    ],
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "category": "public.app-category.business",
+      "icon": "assets/icon.icns"
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "assets/icon.ico"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
+  },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@vitest/coverage-v8": "^4.1.7",
+    "electron": "^42.3.3",
+    "electron-builder": "^26.8.1",
     "jsdom": "^29.1.1",
     "vitest": "^4.1.7"
   }

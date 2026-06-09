@@ -12,6 +12,9 @@ coverage/
 .env.*
 !.env.example
 
+# Electron build output
+dist/
+
 # OS/editor noise
 .DS_Store
 Thumbs.db

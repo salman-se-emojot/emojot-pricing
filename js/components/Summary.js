@@ -3,11 +3,10 @@
 
 import { fmt, round2 } from '../core/utils.js';
 import { OPEN_ITEMS } from '../config/openItems.js';
-import { TIERS } from '../config/pricing.js';
+import { TIERS, DISCOUNTS } from '../config/pricing.js';
 
 const MODULE_LABELS = {
   xm:  'XM — Experience Management',
-  ccm: 'CCM — Complaints Management',
   orm: 'ORM — Online Reputation',
   slt: 'SLT — Social Listening',
 };
@@ -91,9 +90,37 @@ function renderPackageEntitlements(appState) {
   </div>`;
 }
 
+// ── Discount input ────────────────────────────────────────────
+// Free-text name lookup; event binding + lookup logic in app.js.
+function renderDiscountInput(currentDiscountId, inputText) {
+  const preset = currentDiscountId ? DISCOUNTS.find(d => d.id === currentDiscountId) : null;
+
+  let feedbackHtml = '';
+  if (preset) {
+    feedbackHtml = `<div class="discount-chip">
+      <span class="discount-chip-icon">🏷</span>
+      <span class="discount-chip-name">${preset.label.toUpperCase()}</span>
+      <button class="discount-chip-clear" id="discount-clear-btn" aria-label="Remove discount">×</button>
+    </div>`;
+  } else if ((inputText ?? '').trim()) {
+    feedbackHtml = `<span class="discount-no-match">Unknown name</span>`;
+  }
+
+  const safeValue = (inputText ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+
+  return `<div class="discount-selector-wrap">
+    <label class="discount-label" for="discount-input">Discount</label>
+    <input type="text" id="discount-input" class="discount-input"
+           value="${safeValue}"
+           placeholder="Enter code"
+           autocomplete="off" spellcheck="false">
+    ${feedbackHtml}
+  </div>`;
+}
+
 // ── Main summary renderer ─────────────────────────────────────
-export function renderSummary(calcOutput, appState) {
-  const { results, billing, baseTotal, billedTotal, hasAnyContactSales, isUXI } = calcOutput;
+export function renderSummary(calcOutput, appState, discountInputText = '') {
+  const { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales, isUXI } = calcOutput;
 
   if (results.length === 0) {
     return `<div class="summary-empty">Select one or more modules to see pricing.</div>`;
@@ -138,16 +165,35 @@ export function renderSummary(calcOutput, appState) {
 
   html += `<hr class="sum-divider">`;
 
-  // Billing surcharge rows
-  if (billing.surchargePct > 0 && !hasAnyContactSales) {
+  // Discount input — hidden when contact-sales (nothing to discount)
+  if (!hasAnyContactSales) {
+    html += renderDiscountInput(appState?.discount ?? null, discountInputText);
+  }
+
+  // Breakdown rows — shown when there's a discount, a surcharge, or both
+  const showBreakdown = !hasAnyContactSales && (discountPreset || billing.surchargePct > 0);
+  if (showBreakdown) {
+    const baseLbl = billing.surchargePct > 0 ? 'Base total (annual rate)' : 'Base total';
     html += `<div class="sum-line">
-      <span class="sum-label">Base total (annual rate)</span>
+      <span class="sum-label">${baseLbl}</span>
       <span class="sum-amount">${fmt(baseTotal)}/mo</span>
-    </div>
-    <div class="sum-line">
-      <span class="sum-label">Billing surcharge (+${billing.surchargePct}%)</span>
-      <span class="sum-amount">+${fmt(round2(baseTotal * (billing.multiplier - 1)))}/mo</span>
     </div>`;
+
+    if (discountPreset) {
+      const pct = Math.round(discountPreset.rate * 100);
+      html += `<div class="sum-line">
+        <span class="sum-label discount-line-label">Discount — ${discountPreset.label} (${pct}%)</span>
+        <span class="sum-amount discount-line-amount">−${fmt(discountAmount)}/mo</span>
+      </div>`;
+    }
+
+    if (billing.surchargePct > 0) {
+      html += `<div class="sum-line">
+        <span class="sum-label">Billing surcharge (+${billing.surchargePct}%)</span>
+        <span class="sum-amount">+${fmt(round2(discountedBase * (billing.multiplier - 1)))}/mo</span>
+      </div>`;
+    }
+
     html += `<hr class="sum-divider">`;
   }
 
@@ -171,9 +217,12 @@ export function renderSummary(calcOutput, appState) {
     </div>`;
 
     if (billing.surchargePct > 0) {
-      html += `<div class="sum-base-note">Base annual rate: ${fmt(baseTotal)}/mo · ${fmt(round2(baseTotal * 12))}/yr</div>`;
+      // Reference note: show discounted base if discount active, otherwise raw base
+      const refBase = discountPreset ? discountedBase : baseTotal;
+      const refLabel = discountPreset ? 'Discounted annual rate' : 'Base annual rate';
+      html += `<div class="sum-base-note">${refLabel}: ${fmt(refBase)}/mo · ${fmt(round2(refBase * 12))}/yr</div>`;
     } else {
-      html += `<div class="sum-base-note">${fmt(round2(baseTotal * 12))}/yr · no surcharge on annual billing</div>`;
+      html += `<div class="sum-base-note">${fmt(round2(billedTotal * 12))}/yr · no surcharge on annual billing</div>`;
     }
   }
 

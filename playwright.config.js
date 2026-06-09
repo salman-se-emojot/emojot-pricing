@@ -20,7 +20,7 @@ export default defineConfig({
   webServer: {
     command: 'npx serve . --listen 3000 --no-clipboard',
     url: 'http://localhost:3000',
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     timeout: 10_000,
     stdout: 'ignore',
     stderr: 'ignore',

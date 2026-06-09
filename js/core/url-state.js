@@ -1,6 +1,6 @@
 // URL state persistence
 // Encodes the full app configuration into the URL hash so quotes are shareable.
-// Format: #bil=a&mods=xm,ccm&xm_t=basic&xm_tp=5&...
+// Format: #bil=a&mods=xm,orm&xm_t=basic&xm_tp=5&...
 //
 // Design decisions:
 //   - Short keys to keep URLs readable
@@ -16,6 +16,7 @@ export function serializeState(appState) {
   const p = new URLSearchParams();
 
   p.set('bil', BILLING_SHORT[appState.billing] ?? 'a');
+  if (appState.discount) p.set('disc', appState.discount);
 
   if (appState.activeModules.length > 0) {
     p.set('mods', appState.activeModules.join(','));
@@ -33,20 +34,8 @@ export function serializeState(appState) {
         p.set('xm_brc', s.brandCount);
         p.set('xm_em',  s.emosightOn ? 1 : 0);
         p.set('xm_do',  s.domainOn ? 1 : 0);
+        p.set('xm_tk',  s.ticketOn ? 1 : 0);
         p.set('xm_us',  s.users);
-        break;
-
-      case 'ccm':
-        p.set('ccm_t',   s.tier);
-        p.set('ccm_tp',  s.touchpoints);
-        p.set('ccm_se',  s.sensors);
-        p.set('ccm_db',  s.dashboards);
-        p.set('ccm_wf',  s.workflows);
-        p.set('ccm_br',  s.brandOn ? 1 : 0);
-        p.set('ccm_brc', s.brandCount);
-        p.set('ccm_em',  s.emosightOn ? 1 : 0);
-        p.set('ccm_do',  s.domainOn ? 1 : 0);
-        p.set('ccm_us',  s.users);
         break;
 
       case 'orm':
@@ -86,7 +75,8 @@ export function deserializeState(hashString) {
   let p;
   try { p = new URLSearchParams(raw); } catch (_) { return null; }
 
-  const billing = BILLING_LONG[p.get('bil')] ?? null;
+  const billing  = BILLING_LONG[p.get('bil')] ?? null;
+  const discount = p.get('disc') ?? null;
   const modsParam = p.get('mods');
   if (!modsParam) return null;
 
@@ -107,22 +97,8 @@ export function deserializeState(hashString) {
           brandCount:  num(p.get('xm_brc'), 1),
           emosightOn:  bool(p.get('xm_em')),
           domainOn:    bool(p.get('xm_do')),
+          ticketOn:    bool(p.get('xm_tk')),
           users:       num(p.get('xm_us'), 5),
-        };
-        break;
-
-      case 'ccm':
-        moduleStates.ccm = {
-          tier:        p.get('ccm_t')   ?? 'basic',
-          touchpoints: num(p.get('ccm_tp'), 5),
-          sensors:     num(p.get('ccm_se'), 1),
-          dashboards:  num(p.get('ccm_db'), 1),
-          workflows:   num(p.get('ccm_wf'), 1),
-          brandOn:     bool(p.get('ccm_br')),
-          brandCount:  num(p.get('ccm_brc'), 1),
-          emosightOn:  bool(p.get('ccm_em')),
-          domainOn:    bool(p.get('ccm_do')),
-          users:       num(p.get('ccm_us'), 5),
         };
         break;
 
@@ -157,7 +133,7 @@ export function deserializeState(hashString) {
     }
   }
 
-  return { billing, moduleIds, moduleStates };
+  return { billing, discount, moduleIds, moduleStates };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

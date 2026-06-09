@@ -5,9 +5,13 @@ import { appState } from './core/state.js';
 import { calculate } from './core/engine.js';
 import { saveFocus, restoreFocus, fmt, round2 } from './core/utils.js';
 import { serializeState, deserializeState } from './core/url-state.js';
-import { BILLING_CYCLES } from './config/pricing.js';
+import { BILLING_CYCLES, DISCOUNTS } from './config/pricing.js';
 import { MODULE_REGISTRY } from './modules/registry.js';
 import { renderSummary, renderOpenItemsBanner } from './components/Summary.js';
+
+// Tracks the raw text in the discount input across re-renders.
+// Separate from appState.discount (which stores the matched preset id).
+let _discountInputText = '';
 
 // ── Bootstrap ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -44,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Export buttons
   document.getElementById('btn-copy-summary')?.addEventListener('click', handleCopy);
-  document.getElementById('btn-print-summary')?.addEventListener('click', handlePrint);
 });
 
 // ── URL state ─────────────────────────────────────────────────
@@ -52,8 +55,13 @@ function restoreFromHash() {
   const decoded = deserializeState(window.location.hash);
   if (!decoded) return;
 
-  const { billing, moduleIds, moduleStates } = decoded;
-  if (billing) appState.setBilling(billing);
+  const { billing, discount, moduleIds, moduleStates } = decoded;
+  if (billing)  appState.setBilling(billing);
+  if (discount) {
+    appState.setDiscount(discount);
+    // Pre-populate the input with the preset's display label
+    _discountInputText = DISCOUNTS.find(d => d.id === discount)?.label ?? '';
+  }
 
   for (const id of moduleIds) {
     const mod = MODULE_REGISTRY.find(m => m.id === id);
@@ -224,7 +232,24 @@ function updateSummary() {
     title.innerHTML = `UXI Pricing Summary <span class="uxi-badge">UXI</span>`;
   }
 
-  panel.innerHTML = renderSummary(output, appState);
+  const focus = saveFocus();
+  panel.innerHTML = renderSummary(output, appState, _discountInputText);
+  restoreFocus(focus);
+
+  // Bind discount input (re-rendered on every summary update).
+  // Looks up the typed name against DISCOUNTS presets (case-insensitive).
+  document.getElementById('discount-input')?.addEventListener('input', e => {
+    _discountInputText = e.target.value;
+    const q = e.target.value.trim().toLowerCase();
+    const match = DISCOUNTS.find(d => d.id === q || d.label.toLowerCase() === q);
+    appState.setDiscount(match ? match.id : null);
+  });
+
+  // Clear button on the applied-discount chip
+  document.getElementById('discount-clear-btn')?.addEventListener('click', () => {
+    _discountInputText = '';
+    appState.setDiscount(null);
+  });
 
   // Show/hide export bar based on whether any module is active
   const exportBar = document.getElementById('export-bar');
@@ -256,204 +281,12 @@ function handleCopy() {
   });
 }
 
-// ── Export: Print receipt ─────────────────────────────────────
-function handlePrint() {
-  const html = buildReceiptHTML();
-  if (!html) return;
-  const win = window.open('', '_blank', 'width=520,height=720');
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  // Give fonts a tick to load, then print
-  win.onload = () => { win.print(); win.onafterprint = () => win.close(); };
-}
-
-function buildReceiptHTML() {
-  if (appState.activeModules.length === 0) return '';
-
-  const output = calculate(appState);
-  const { results, billing, baseTotal, billedTotal, hasAnyContactSales } = output;
-
-  const MODULE_LABELS = {
-    xm:  'XM — Experience Management',
-    ccm: 'CCM — Complaints Management',
-    orm: 'ORM — Online Reputation Management',
-    slt: 'SLT — Social Listening & Tracking',
-  };
-
-  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const billingLabel = `${billing.label}${billing.surchargePct > 0 ? ` (+${billing.surchargePct}% surcharge)` : ' · base rate'}`;
-
-  // Build module rows HTML
-  let modulesHTML = '';
-  for (const r of results) {
-    const rowsHTML = r.lines
-      .filter(l => l.amount != null)
-      .map(l => `
-        <tr>
-          <td class="line-label">${l.label}</td>
-          <td class="line-amt">${fmt(l.amount)}</td>
-        </tr>`)
-      .join('');
-
-    const subtotalHTML = r.hasContactSales
-      ? `<tr class="subtotal-row"><td colspan="2" class="contact-sales">📞 Contact sales — custom quote required</td></tr>`
-      : `<tr class="subtotal-row"><td class="line-label">Module subtotal</td><td class="line-amt">${fmt(r.subtotal)}/mo</td></tr>`;
-
-    modulesHTML += `
-      <tr class="module-header-row">
-        <td colspan="2" class="module-header">${MODULE_LABELS[r.moduleId] ?? r.moduleId}</td>
-      </tr>
-      ${rowsHTML}
-      ${subtotalHTML}
-      <tr class="spacer-row"><td colspan="2"></td></tr>`;
-  }
-
-  // Build totals HTML
-  let totalsHTML = '';
-  if (hasAnyContactSales) {
-    totalsHTML = `<tr><td colspan="2" class="contact-sales total-contact">Custom quote required — contact Emojot sales</td></tr>`;
-  } else {
-    if (billing.surchargePct > 0) {
-      totalsHTML += `
-        <tr>
-          <td class="line-label">Base total (annual rate)</td>
-          <td class="line-amt">${fmt(baseTotal)}/mo</td>
-        </tr>
-        <tr>
-          <td class="line-label">Billing surcharge (+${billing.surchargePct}%)</td>
-          <td class="line-amt">+${fmt(round2(baseTotal * (billing.multiplier - 1)))}/mo</td>
-        </tr>`;
-    }
-    totalsHTML += `
-      <tr class="grand-total-row">
-        <td class="grand-total-label">Total</td>
-        <td class="grand-total-amt">${fmt(billedTotal)}<span class="per-mo">/mo</span></td>
-      </tr>
-      <tr>
-        <td class="line-label annual-label">Annual total</td>
-        <td class="line-amt annual-amt">${fmt(round2(billedTotal * 12))}/yr</td>
-      </tr>`;
-  }
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Emojot Pricing Quote — ${date}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 13px;
-      color: #111;
-      background: #fff;
-      width: 460px;
-      margin: 32px auto;
-      padding: 28px 32px 40px;
-    }
-
-    /* Header */
-    .receipt-header { text-align: center; margin-bottom: 20px; }
-    .receipt-co { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #555; margin-bottom: 4px; }
-    .receipt-title { font-size: 18px; font-weight: bold; letter-spacing: .04em; margin-bottom: 14px; }
-    .receipt-meta { font-size: 11px; color: #444; line-height: 1.7; }
-
-    /* Dividers */
-    .dbl { border: none; border-top: 2px solid #111; margin: 14px 0; }
-    .sng { border: none; border-top: 1px dashed #aaa; margin: 10px 0; }
-
-    /* Line items table */
-    table { width: 100%; border-collapse: collapse; }
-    .module-header-row td { padding-top: 4px; }
-    .module-header {
-      font-weight: bold;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #ccc;
-    }
-    .line-label { padding: 3px 0; color: #333; }
-    .line-amt { padding: 3px 0; text-align: right; white-space: nowrap; }
-    .subtotal-row td {
-      font-weight: bold;
-      border-top: 1px solid #ccc;
-      padding-top: 5px;
-      padding-bottom: 2px;
-    }
-    .spacer-row td { height: 12px; }
-    .contact-sales { color: #b00; font-style: italic; }
-
-    /* Totals */
-    .grand-total-row td { padding-top: 6px; }
-    .grand-total-label { font-weight: bold; font-size: 15px; }
-    .grand-total-amt { font-weight: bold; font-size: 17px; text-align: right; }
-    .per-mo { font-size: 11px; font-weight: normal; }
-    .annual-label { font-size: 11px; color: #555; }
-    .annual-amt { font-size: 11px; color: #555; text-align: right; }
-    .total-contact { font-weight: bold; text-align: center; padding: 8px 0; }
-
-    /* Footer */
-    .receipt-footer {
-      text-align: center;
-      font-size: 10px;
-      color: #888;
-      margin-top: 20px;
-      line-height: 1.6;
-    }
-
-    @media print {
-      body { margin: 0; padding: 20px; width: 100%; }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="receipt-header">
-    <div class="receipt-co">Emojot</div>
-    <div class="receipt-title">Pricing Quote</div>
-    <div class="receipt-meta">
-      Date: ${date}<br>
-      Billing: ${billingLabel}
-    </div>
-  </div>
-
-  <hr class="dbl">
-
-  <table>
-    ${modulesHTML}
-  </table>
-
-  <hr class="dbl">
-
-  <table>
-    ${totalsHTML}
-  </table>
-
-  <hr class="sng">
-
-  <div class="receipt-footer">
-    emojot.com &nbsp;·&nbsp; Generated ${date}<br>
-    ${window.location.href}
-  </div>
-
-  <script>
-    window.onload = function () {
-      window.print();
-      window.onafterprint = function () { window.close(); };
-    };
-  <\/script>
-</body>
-</html>`;
-}
-
 // ── Export: Copy to clipboard ─────────────────────────────────
 function buildTextQuote() {
   if (appState.activeModules.length === 0) return '';
 
   const output = calculate(appState);
-  const { results, billing, baseTotal, billedTotal, hasAnyContactSales } = output;
+  const { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales } = output;
   const MODULE_LABELS = {
     xm:  'XM — Experience Management',
     ccm: 'CCM — Complaints Management',
@@ -490,11 +323,20 @@ function buildTextQuote() {
   if (hasAnyContactSales) {
     lines.push('TOTAL: Custom quote required — contact sales');
   } else {
-    if (billing.surchargePct > 0) {
-      lines.push(`${'Base total (annual rate)'.padEnd(36)}${fmt(baseTotal).padStart(8)}/mo`);
-      lines.push(`${'Billing surcharge (+' + billing.surchargePct + '%)'.padEnd(36)}${('+' + fmt(round2(baseTotal * (billing.multiplier - 1)))).padStart(8)}/mo`);
-      lines.push('');
+    const showBreakdown = discountPreset || billing.surchargePct > 0;
+    if (showBreakdown) {
+      const baseLbl = billing.surchargePct > 0 ? 'Base total (annual rate)' : 'Base total';
+      lines.push(`${baseLbl.padEnd(36)}${fmt(baseTotal).padStart(8)}/mo`);
     }
+    if (discountPreset) {
+      const pct = Math.round(discountPreset.rate * 100);
+      const discLbl = `Discount — ${discountPreset.label} (${pct}%)`;
+      lines.push(`${discLbl.padEnd(36)}${('−' + fmt(discountAmount)).padStart(8)}/mo`);
+    }
+    if (billing.surchargePct > 0) {
+      lines.push(`${'Billing surcharge (+' + billing.surchargePct + '%)'.padEnd(36)}${('+' + fmt(round2(discountedBase * (billing.multiplier - 1)))).padStart(8)}/mo`);
+    }
+    if (showBreakdown) lines.push('');
     lines.push(`TOTAL: ${fmt(billedTotal)}/mo`);
     lines.push(`Annual total: ${fmt(round2(billedTotal * 12))}/yr`);
   }
