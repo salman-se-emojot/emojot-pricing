@@ -286,7 +286,7 @@ function buildTextQuote() {
   if (appState.activeModules.length === 0) return '';
 
   const output = calculate(appState);
-  const { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales } = output;
+  const { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales, totalSetupFee } = output;
   const MODULE_LABELS = {
     xm:  'XM — Experience Management',
     ccm: 'CCM — Complaints Management',
@@ -315,6 +315,7 @@ function buildTextQuote() {
       lines.push('  Contact sales for custom quote');
     } else {
       lines.push(`${'  Module subtotal'.padEnd(36)}${fmt(r.subtotal).padStart(8)}/mo`);
+      lines.push(`${'  Setup fee (one-time)'.padEnd(36)}${fmt(r.setupFee).padStart(8)}`);
     }
     lines.push('');
   }
@@ -339,6 +340,8 @@ function buildTextQuote() {
     if (showBreakdown) lines.push('');
     lines.push(`TOTAL: ${fmt(billedTotal)}/mo`);
     lines.push(`Annual total: ${fmt(round2(billedTotal * 12))}/yr`);
+    lines.push('');
+    lines.push(`${'Total setup fee (one-time)'.padEnd(36)}${fmt(totalSetupFee).padStart(8)}`);
   }
 
   lines.push('');

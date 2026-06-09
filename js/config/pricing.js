@@ -109,6 +109,10 @@ export const DEFAULT_PRICING_CONFIG = {
     },
   },
 
+  // Setup Fee Rate — one-time onboarding charge as a fraction of annual subscription (ADR 0003).
+  // Applied per-module on raw subtotal × 12 (discount does NOT reduce setup fee).
+  SETUP_FEE_RATE: 0.20,
+
   // Discount Presets — named, pre-approved percentage discounts (ADR 0002)
   // Applied to Base Total before the billing-cycle surcharge. Single selection only.
   DISCOUNTS: [
@@ -201,6 +205,7 @@ export const ORM_NON_ADMIN_CONNECT_SLABS = ACTIVE_PRICING_CONFIG.ORM_NON_ADMIN_C
 export const TIERS = ACTIVE_PRICING_CONFIG.TIERS;
 export const PRICES = ACTIVE_PRICING_CONFIG.PRICES;
 export const DISCOUNTS = ACTIVE_PRICING_CONFIG.DISCOUNTS;
+export const SETUP_FEE_RATE = ACTIVE_PRICING_CONFIG.SETUP_FEE_RATE;
 
 export function getDefaultPricingConfig() {
   return deepClone(DEFAULT_PRICING_CONFIG);
