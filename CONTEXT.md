@@ -29,3 +29,6 @@ The single Discount Preset selected for a given quote. Applied to the Base Total
 
 ## Base Total
 The sum of all active module subtotals before any billing-cycle surcharge or Discount is applied.
+
+## Setup Fee
+A one-time onboarding charge calculated per module as 20% of that module's annual subscription value (`moduleSubtotal × 12 × 0.20`). Applied to the raw module subtotal — Discount Presets do not reduce it (ADR 0003). Hidden when any module in the quote requires contact-sales pricing. Shown both inside each module's line-item block and as a rolled-up total alongside the monthly/annual totals.

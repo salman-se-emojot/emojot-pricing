@@ -120,7 +120,7 @@ function renderDiscountInput(currentDiscountId, inputText) {
 
 // ── Main summary renderer ─────────────────────────────────────
 export function renderSummary(calcOutput, appState, discountInputText = '') {
-  const { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales, isUXI } = calcOutput;
+  const { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales, isUXI, totalSetupFee } = calcOutput;
 
   if (results.length === 0) {
     return `<div class="summary-empty">Select one or more modules to see pricing.</div>`;
@@ -160,7 +160,16 @@ export function renderSummary(calcOutput, appState, discountInputText = '') {
     html += `<div class="sum-line subtotal">
       <span class="sum-label">Module subtotal</span>
       <span class="sum-amount">${r.hasContactSales ? '—' : fmt(r.subtotal)}/mo</span>
-    </div></div>`;
+    </div>`;
+
+    if (!hasAnyContactSales) {
+      html += `<div class="sum-line setup-fee-line">
+        <span class="sum-label indent">Setup fee (one-time)</span>
+        <span class="sum-amount setup-fee-amount">${fmt(r.setupFee)}</span>
+      </div>`;
+    }
+
+    html += `</div>`;
   }
 
   html += `<hr class="sum-divider">`;
@@ -214,6 +223,12 @@ export function renderSummary(calcOutput, appState, discountInputText = '') {
       <div class="sum-total-note">${isUXI ? '<span class="uxi-badge">UXI</span> ' : ''}${cycleNote}</div>
       <div class="sum-total-amount">${fmt(billedTotal)}<span class="sum-total-mo">/mo</span></div>
       <div class="sum-total-annual">Annual total: ${fmt(round2(billedTotal * 12))}</div>
+    </div>
+    <div class="sum-setup-total-block">
+      <div class="sum-line setup-fee-total-line">
+        <span class="sum-label">Total setup fee <span class="setup-fee-badge">one-time</span></span>
+        <span class="sum-amount setup-fee-total-amount">${fmt(totalSetupFee)}</span>
+      </div>
     </div>`;
 
     if (billing.surchargePct > 0) {

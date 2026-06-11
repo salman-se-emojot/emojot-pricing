@@ -1637,3 +1637,46 @@ input:disabled + .slider {
   color: var(--success) !important;
   font-weight: 700;
 }
+
+/* Setup fee lines */
+.setup-fee-line {
+  margin-top: 3px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--gray-200);
+}
+
+.setup-fee-amount {
+  color: var(--gray-500);
+  font-size: 12px;
+}
+
+.sum-setup-total-block {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+}
+
+.setup-fee-total-line {
+  margin: 0;
+}
+
+.setup-fee-total-amount {
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
+.setup-fee-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: var(--gray-200);
+  color: var(--gray-600);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+}

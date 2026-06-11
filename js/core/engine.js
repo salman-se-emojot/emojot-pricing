@@ -1,7 +1,7 @@
 // Calculation engine — orchestrates module calculators and
 // applies the billing multiplier to produce the final result set.
 
-import { BILLING_CYCLES, DISCOUNTS } from '../config/pricing.js';
+import { BILLING_CYCLES, DISCOUNTS, SETUP_FEE_RATE } from '../config/pricing.js';
 import { MODULE_REGISTRY } from '../modules/registry.js';
 import { centSum, round2 } from './utils.js';
 
@@ -13,7 +13,11 @@ export function calculate(appState) {
     const mod = MODULE_REGISTRY.find(m => m.id === id);
     if (!mod) continue;
     const moduleState = appState.getModule(id);
-    results.push(mod.calculate(moduleState));
+    const result = mod.calculate(moduleState);
+    // Setup fee: 20% of annual subtotal, based on raw subtotal (ADR 0003).
+    // Zero when module requires contact-sales (no numeric subtotal available).
+    result.setupFee = result.hasContactSales ? 0 : round2(result.subtotal * 12 * SETUP_FEE_RATE);
+    results.push(result);
   }
 
   const billing = BILLING_CYCLES[appState.billing];
@@ -31,5 +35,8 @@ export function calculate(appState) {
   const billedTotal = round2(discountedBase * billing.multiplier);
   const isUXI = results.length > 1;
 
-  return { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales, isUXI };
+  // Total setup fee — hidden (0) when any module requires contact-sales.
+  const totalSetupFee = hasAnyContactSales ? 0 : centSum(results.map(r => r.setupFee));
+
+  return { results, billing, baseTotal, discountPreset, discountAmount, discountedBase, billedTotal, hasAnyContactSales, isUXI, totalSetupFee };
 }
